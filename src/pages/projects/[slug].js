@@ -1,6 +1,6 @@
 import Head from 'next/head'
 import Link from 'next/link'
-import Layout, { Arrow } from '@/components/Layout'
+import Layout, { Arrow, SiteImage } from '@/components/Layout'
 import { projects } from '@/data/site'
 
 export default function ProjectPage({ project, nextProject }) {
@@ -8,7 +8,7 @@ export default function ProjectPage({ project, nextProject }) {
   return (
     <Layout><Head><title>{project.title} | Réalisations</title></Head><article className="case-study">
       <header className="case-header shell"><Link href="/projects" className="back-link">← Toutes les réalisations</Link><p className="eyebrow">{project.type} · {project.number}</p><h1>{project.title}</h1><p>{project.summary}</p></header>
-      <div className="case-hero shell"><img src={project.image} alt="" /></div>
+      <div className="case-hero shell"><SiteImage src={project.image} sizes="100vw" priority /></div>
       <div className="case-content shell"><aside><span>Technologies</span>{project.technologies.map((technology) => <p key={technology}>{technology}</p>)}</aside>
         <div className="case-sections">
           <section><span>01</span><div><h2>Contexte & problème</h2><p>{project.problem}</p></div></section>

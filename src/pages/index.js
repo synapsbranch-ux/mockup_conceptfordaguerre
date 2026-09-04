@@ -1,6 +1,6 @@
 import Head from 'next/head'
 import Link from 'next/link'
-import Layout, { Arrow, SectionTitle } from '@/components/Layout'
+import Layout, { Arrow, SectionTitle, SiteImage } from '@/components/Layout'
 import { articles, images, projects, services } from '@/data/site'
 
 export default function Home() {
@@ -47,7 +47,7 @@ export default function Home() {
         <div className="project-feature-grid">
           {projects.slice(0, 3).map((project, index) => (
             <Link className={index === 0 ? 'project-card project-card-large' : 'project-card'} href={`/projects/${project.slug}`} key={project.slug}>
-              <div className="media-frame"><img src={project.image} alt="" /></div>
+              <div className="media-frame"><SiteImage src={project.image} sizes={index === 0 ? '(max-width: 820px) 100vw, 58vw' : '(max-width: 820px) 100vw, 40vw'} /></div>
               <div className="project-card-meta"><span>{project.number} / {project.type}</span><Arrow /></div>
               <h3>{project.title}</h3>
               <p>{project.summary}</p>
@@ -70,7 +70,7 @@ export default function Home() {
       </section>
 
       <section className="origin-split">
-        <div className="origin-image"><img src={images.journey} alt="Parcours personnel entre Haïti et le Québec" /></div>
+        <div className="origin-image"><SiteImage src={images.journey} alt="Parcours personnel entre Haïti et le Québec" sizes="(max-width: 820px) 100vw, 50vw" /></div>
         <div className="origin-copy">
           <p className="eyebrow light">Un parcours, deux territoires</p>
           <h2>D’Haïti au Québec,<br /><em>une même volonté d’impact.</em></h2>
@@ -79,12 +79,34 @@ export default function Home() {
         </div>
       </section>
 
+      <section className="home-gallery section-pad shell">
+        <SectionTitle eyebrow="Parcours en images" title="Des racines, des rencontres, une trajectoire" />
+        <div className="home-gallery-grid">
+          <figure className="gallery-tall">
+            <SiteImage src={images.fsaUlaval} alt="Jacques-Daguerre Valcy à la Faculté des sciences de l’agriculture et de l’alimentation" sizes="(max-width: 520px) 100vw, 38vw" />
+            <figcaption><span>01</span> Formation & recherche</figcaption>
+          </figure>
+          <figure>
+            <SiteImage src={images.graduation} alt="Portrait de graduation de Jacques-Daguerre Valcy" sizes="(max-width: 520px) 100vw, 31vw" />
+            <figcaption><span>02</span> Persévérance académique</figcaption>
+          </figure>
+          <figure>
+            <SiteImage src={images.universityGroup} alt="Jacques-Daguerre Valcy avec un groupe universitaire" sizes="(max-width: 520px) 100vw, 31vw" />
+            <figcaption><span>03</span> Intelligence collective</figcaption>
+          </figure>
+          <figure className="gallery-wide">
+            <SiteImage src={images.colleaguesEvent} alt="Rencontre professionnelle avec des collègues" sizes="(max-width: 520px) 100vw, 62vw" />
+            <figcaption><span>04</span> Collaboration & communauté</figcaption>
+          </figure>
+        </div>
+      </section>
+
       <section className="article-preview section-pad shell">
         <SectionTitle eyebrow="Notes & perspectives" title="Penser la donnée autrement" action="Voir le blog" href="/blog" />
         <div className="article-grid">
           {articles.slice(0, 3).map((article) => (
             <Link href={`/blog/${article.slug}`} className="article-card" key={article.slug}>
-              <div className="article-image"><img src={article.image} alt="" /></div>
+              <div className="article-image"><SiteImage src={article.image} sizes="(max-width: 820px) 100vw, 33vw" /></div>
               <span className="article-category">{article.category}</span><h3>{article.title}</h3>
               <div className="article-meta"><span>{article.date} · {article.read}</span><Arrow /></div>
             </Link>

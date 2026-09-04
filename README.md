@@ -16,7 +16,7 @@ Prototype Next.js du portfolio professionnel de Jacques-Daguerre Valcy et de l�
 - Prototype de micro CMS
 - Newsletter et liens sociaux dans le pied de page
 
-Les images sont chargées depuis le dossier Google Drive fourni pour le projet. Les champs qui demandent encore une validation client sont explicitement signalés dans l’interface.
+Vingt-cinq images sélectionnées dans le dossier Google Drive du projet sont stockées localement dans `public/images/daguerre`. Elles sont redimensionnées, débarrassées des métadonnées inutiles et converties en WebP. Les champs qui demandent encore une validation client sont explicitement signalés dans l’interface.
 
 ## Lancer le projet
 
@@ -26,6 +26,12 @@ npm run dev
 ```
 
 Puis ouvrir `http://localhost:3000`.
+
+Pour télécharger de nouveau les 25 sources Drive et régénérer les images WebP :
+
+```bash
+npm run images:optimize
+```
 
 ## Vérifier la version de production
 

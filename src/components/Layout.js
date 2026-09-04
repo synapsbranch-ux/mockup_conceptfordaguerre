@@ -1,6 +1,8 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/router'
 import { useState } from 'react'
+import { images } from '@/data/site'
 
 const nav = [
   ['Accueil', '/'],
@@ -62,6 +64,11 @@ export default function Layout({ children, darkHeader = false }) {
       <main id="contenu">{children}</main>
 
       <footer className="site-footer">
+        <div className="footer-visuals">
+          <figure><SiteImage src={images.professionalAnalyst} alt="Jacques-Daguerre Valcy, analyste de données" sizes="(max-width: 820px) 100vw, 36vw" /><figcaption>Analyser avec rigueur</figcaption></figure>
+          <div className="footer-visual-message"><span>DATAKLE / 2026</span><p>Clarifier.<br /><em>Décider.</em><br />Agir.</p></div>
+          <figure><SiteImage src={images.datakleFounder} alt="Jacques-Daguerre Valcy, fondateur de Datakle" sizes="(max-width: 820px) 100vw, 36vw" /><figcaption>Construire avec impact</figcaption></figure>
+        </div>
         <div className="footer-lead">
           <p className="eyebrow light">Restons connectés</p>
           <h2>Des idées utiles,<br /><em>directement dans votre boîte.</em></h2>
@@ -131,6 +138,10 @@ export function SectionTitle({ eyebrow, title, action, href = '/' }) {
       {action && <Link className="text-link" href={href}>{action} <Arrow /></Link>}
     </div>
   )
+}
+
+export function SiteImage({ src, alt = '', width = 1600, height = 1000, sizes = '100vw', ...props }) {
+  return <Image src={src} alt={alt} width={width} height={height} sizes={sizes} {...props} />
 }
 
 export { Arrow }

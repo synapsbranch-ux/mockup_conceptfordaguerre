@@ -1,6 +1,6 @@
 import Head from 'next/head'
 import Link from 'next/link'
-import Layout from '@/components/Layout'
+import Layout, { SiteImage } from '@/components/Layout'
 import { articles } from '@/data/site'
 
 export default function Article({ article }) {
@@ -10,7 +10,7 @@ export default function Article({ article }) {
       <Head><title>{article.title} | Blog</title></Head>
       <article className="article-page">
         <header className="article-header shell"><Link href="/blog" className="back-link">← Retour au blog</Link><p className="eyebrow">{article.category} · {article.read}</p><h1>{article.title}</h1><p>{article.excerpt}</p></header>
-        <div className="article-hero shell"><img src={article.image} alt="" /></div>
+        <div className="article-hero shell"><SiteImage src={article.image} sizes="100vw" priority /></div>
         <div className="article-body">
           <p className="article-lead">Cet article est présenté sous forme de prototype éditorial. Le texte final sera rédigé et validé dans le micro CMS avant publication.</p>
           <h2>Partir de la décision</h2><p>Une démarche analytique utile commence par une question simple : quelle décision voulons-nous améliorer ? Cette question permet de choisir les données, les indicateurs et le niveau de détail réellement nécessaires.</p>

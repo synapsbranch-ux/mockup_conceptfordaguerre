@@ -1,5 +1,5 @@
 import Head from 'next/head'
-import Layout, { PageIntro } from '@/components/Layout'
+import Layout, { PageIntro, SiteImage } from '@/components/Layout'
 import { images, journey } from '@/data/site'
 
 export default function About() {
@@ -8,7 +8,7 @@ export default function About() {
       <Head><title>À propos | Jacques-Daguerre Valcy</title></Head>
       <PageIntro eyebrow="À propos" number="01" title={'Comprendre les systèmes.<br/><em>Faire avancer les décisions.</em>'} description="Ingénieur-agronome de formation, analyste par expertise et stratège par conviction. Mon parcours suit un même fil : rendre la complexité utile." />
       <section className="about-lead shell">
-        <div className="about-portrait"><img src={images.portrait} alt="Portrait professionnel de Jacques-Daguerre Valcy" /></div>
+        <div className="about-portrait"><SiteImage src={images.portrait} alt="Portrait professionnel de Jacques-Daguerre Valcy" width={1000} height={1250} sizes="(max-width: 820px) 100vw, 42vw" priority /></div>
         <div className="about-biography">
           <p className="eyebrow">Biographie</p>
           <p className="lead-copy">Je crois à une analytique qui ne s’arrête pas aux constats. Une analytique qui aide les organisations à comprendre, choisir et agir avec plus de confiance.</p>
@@ -20,13 +20,17 @@ export default function About() {
       <section className="journey-section section-pad"><div className="shell">
         <p className="eyebrow light">Le fil du parcours</p><h2 className="display-light">De la terre aux données,<br /><em>de l’analyse à l’action.</em></h2>
         <div className="journey-list">{journey.map((item, index) => (
-          <article className="journey-row" key={item.title}><span>0{index + 1}</span><div><h3>{item.title}</h3><p>{item.text}</p></div><img src={item.image} alt="" /></article>
+          <article className="journey-row" key={item.title}><span>0{index + 1}</span><div><h3>{item.title}</h3><p>{item.text}</p></div><SiteImage src={item.image} sizes="180px" /></article>
         ))}</div>
       </div></section>
       <section className="about-grid section-pad shell">
         <div><p className="eyebrow">Aujourd’hui</p><h2>Analytique d’affaires,<br />stratégie et Datakle.</h2></div>
         <div className="about-story"><p>J’ai complété une formation de deuxième cycle en suivi-évaluation et un MBA spécialisé en analytique d’affaires. Ces expériences ont renforcé ma capacité à relier les données aux objectifs, aux processus et aux réalités humaines.</p><p>La création de Datakle traduit cette ambition : offrir des services d’analyse, de visualisation, d’automatisation et de solutions Web/data qui créent un impact concret.</p></div>
         <div className="value-stack">{['Rigueur', 'Impact', 'Éducation', 'Transparence', 'Innovation responsable', 'Solidarité'].map((value) => <span key={value}>{value}</span>)}</div>
+      </section>
+      <section className="about-milestones shell">
+        <figure><SiteImage src={images.universityCampus} alt="Campus universitaire associé au parcours de Jacques-Daguerre Valcy" sizes="(max-width: 520px) 100vw, 67vw" /><figcaption>Un parcours construit entre apprentissage, recherche et expérience.</figcaption></figure>
+        <figure><SiteImage src={images.mbaDiploma} alt="Diplôme de MBA de Jacques-Daguerre Valcy" sizes="(max-width: 520px) 100vw, 33vw" /><figcaption>MBA spécialisé en analytique d’affaires — détails à confirmer.</figcaption></figure>
       </section>
     </Layout>
   )
