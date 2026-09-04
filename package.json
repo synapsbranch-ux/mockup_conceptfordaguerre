@@ -1,5 +1,6 @@
 {
-  "name": "developer-portfolio-starter-code",
+  "name": "jacques-daguerre-valcy-portfolio",
+  "description": "Prototype du portfolio de Jacques-Daguerre Valcy et de l’offre Datakle.",
   "version": "0.1.0",
   "private": true,
   "scripts": {
