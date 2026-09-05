@@ -1,0 +1,120 @@
+/**
+ * Personnalisation de l'administration Payload.
+ *
+ * Deux regles apprises en corrigeant la page de connexion :
+ *
+ * 1. Payload declare ses jetons sur `:root` (theme clair) et sur
+ *    `html[data-theme='dark']` (theme sombre). Une surcharge posee sur `:root`
+ *    seul s'applique AUX DEUX et casse le mode sombre. Tout est donc decline
+ *    explicitement pour les deux themes ci-dessous.
+ *
+ * 2. Les styles de Payload vivent dans `@layer payload-default`. Ce fichier
+ *    n'etant pas dans une couche, ses regles l'emportent quelle que soit leur
+ *    specificite. Il faut donc n'ecrire ici que ce que l'on veut reellement
+ *    imposer, et laisser Payload gerer tout le reste.
+ *
+ * Note : `.template-minimal` (la page de connexion) reference
+ * `var(--theme-bg-color)`, un jeton que Payload ne definit nulle part. La page
+ * se retrouvait donc sans fond propre. La regle plus bas le corrige.
+ */
+
+// Palette du site, reprise de src/styles/globals.css
+$green: #173f35;
+$green-light: #24594b;
+$acid: #c9f06d;
+$ink: #101716;
+
+/* --------------------------------------------------------------------------
+   Accent de marque, decline par theme
+   -------------------------------------------------------------------------- */
+
+:root,
+html[data-theme='light'] {
+  --brand-accent: #{$green};
+  --brand-accent-hover: #{$green-light};
+  --brand-on-accent: #fff;
+  --brand-page-bg: #f4f2ea;
+  --brand-card-shadow: 0 18px 60px rgb(16 23 22 / 10%);
+}
+
+html[data-theme='dark'] {
+  // Le vert profond manque de contraste sur fond sombre : on bascule sur
+  // l'accent acidule du site, lisible dans les deux sens.
+  --brand-accent: #{$acid};
+  --brand-accent-hover: #d8ff85;
+  --brand-on-accent: #{$ink};
+  --brand-page-bg: var(--theme-elevation-50);
+  --brand-card-shadow: 0 18px 60px rgb(0 0 0 / 45%);
+}
+
+/* --------------------------------------------------------------------------
+   Page de connexion
+   -------------------------------------------------------------------------- */
+
+.template-minimal {
+  // Corrige le jeton manquant : sans cela, la section n'a pas de fond.
+  background-color: var(--brand-page-bg);
+  color: var(--theme-text);
+  min-height: 100vh;
+
+  &__wrap {
+    background-color: var(--theme-elevation-0);
+    border: 1px solid var(--theme-border-color);
+    border-radius: 8px;
+    padding: clamp(30px, 5vw, 48px);
+    box-shadow: var(--brand-card-shadow);
+  }
+}
+
+.login {
+  &__brand {
+    margin-bottom: calc(var(--base) * 1.5);
+  }
+
+  // Le bouton de connexion occupe toute la largeur de la carte.
+  .form-submit .btn,
+  .form-submit button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Boutons d'action principaux
+   -------------------------------------------------------------------------- */
+
+.btn--style-primary {
+  background-color: var(--brand-accent);
+  border-color: var(--brand-accent);
+  color: var(--brand-on-accent);
+
+  .btn__label,
+  .btn__content {
+    color: var(--brand-on-accent);
+  }
+
+  &:hover:not(:disabled),
+  &:focus-visible:not(:disabled) {
+    background-color: var(--brand-accent-hover);
+    border-color: var(--brand-accent-hover);
+    color: var(--brand-on-accent);
+  }
+
+  &:disabled {
+    opacity: 0.55;
+  }
+}
+
+// Anneau de focus visible dans les deux themes.
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--brand-accent);
+  outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   Bibliotheque de medias
+   -------------------------------------------------------------------------- */
+
+.thumbnail img {
+  object-fit: cover;
+}

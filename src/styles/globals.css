@@ -518,3 +518,10 @@ em { font-family: var(--serif); font-weight: 400; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }
+
+/* Liens de réseaux sociaux avec icône — ajout postérieur au prototype. */
+.social-link { display: inline-flex; align-items: center; gap: 9px; }
+.social-link svg { flex: 0 0 auto; opacity: .62; transition: opacity .2s ease; }
+.social-link:hover svg { opacity: 1; }
+.contact-aside .social-link { font-size: 15px; font-weight: 600; }
+.contact-aside .social-links { display: flex; flex-direction: column; gap: 10px; }

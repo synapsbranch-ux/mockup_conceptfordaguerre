@@ -1,22 +1,53 @@
 {
   "name": "jacques-daguerre-valcy-portfolio",
-  "description": "Prototype du portfolio de Jacques-Daguerre Valcy et de l’offre Datakle.",
-  "version": "0.1.0",
+  "description": "Portfolio de Jacques-Daguerre Valcy et offre Datakle, propulsé par Payload CMS.",
+  "version": "1.0.0",
   "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "images:optimize": "node scripts/optimize-images.mjs"
+    "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
+    "build": "cross-env NODE_OPTIONS=--no-deprecation next build",
+    "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
+    "lint": "eslint .",
+    "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
+    "payload:generate-types": "cross-env NODE_OPTIONS=--no-deprecation payload generate:types",
+    "payload:bootstrap-admin": "cross-env NODE_OPTIONS=--no-deprecation payload run src/payload/scripts/bootstrapAdmin.ts",
+    "payload:migrate-media": "cross-env NODE_OPTIONS=--no-deprecation payload run src/payload/scripts/migrateMedia.ts",
+    "payload:seed": "cross-env NODE_OPTIONS=--no-deprecation payload run src/payload/scripts/seed.ts",
+    "payload:migrate-content": "npm run payload:migrate-media && npm run payload:seed",
+    "test": "node --env-file-if-exists=.env --conditions=react-server --import tsx --test 'tests/**/*.test.ts'",
+    "verify:routes": "node scripts/verify-routes.mjs",
+    "images:optimize": "node scripts/optimize-images.mjs",
+    "seo:audit": "node scripts/seo-audit.mjs"
   },
   "dependencies": {
-    "eslint": "8.36.0",
-    "eslint-config-next": "13.2.4",
-    "framer-motion": "^10.6.0",
-    "next": "15.5.15",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "sharp": "^0.34.5"
+    "@payloadcms/db-mongodb": "3.88.0",
+    "@payloadcms/next": "3.88.0",
+    "@payloadcms/plugin-cloud-storage": "3.88.0",
+    "@payloadcms/richtext-lexical": "3.88.0",
+    "@payloadcms/storage-s3": "3.88.0",
+    "@payloadcms/translations": "3.88.0",
+    "@payloadcms/ui": "3.88.0",
+    "graphql": "^16.14.2",
+    "ioredis": "^5.9.0",
+    "next": "16.3.4",
+    "payload": "3.88.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "server-only": "^0.0.1",
+    "sharp": "^0.35.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "cross-env": "^7.0.3",
+    "eslint": "^9.39.0",
+    "eslint-config-next": "16.3.4",
+    "tsx": "^4.23.13",
+    "typescript": "^5.9.3"
   }
 }

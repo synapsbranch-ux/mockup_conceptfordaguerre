@@ -2,7 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import sharp from 'sharp'
 
-const outputDirectory = path.join(process.cwd(), 'public', 'images', 'daguerre')
+const outputDirectory = path.join(process.cwd(), 'seed-assets', 'daguerre')
 
 const assets = [
   { id: '1ulD3VmDYty7frnenoRJGkYqsOg7KKndt', file: 'hero-executive.webp', width: 1920, quality: 82 },
