@@ -51,6 +51,22 @@ const s3 =
 /** Retire un éventuel slash final pour éviter les doubles slashs dans les URLs canoniques. */
 const normalizeURL = (value: string): string => value.replace(/\/+$/, '')
 
+/**
+ * Fournisseur Google.
+ * Optionnel au démarrage : sans identifiants, le bouton « Continuer avec Google »
+ * est masqué plutôt que de faire échouer le rendu de tout le site. La connexion
+ * par courriel reste disponible.
+ */
+const googleClientId = read('GOOGLE_CLIENT_ID')
+const googleClientSecret = read('GOOGLE_CLIENT_SECRET')
+const google =
+  googleClientId && googleClientSecret
+    ? { clientId: googleClientId, clientSecret: googleClientSecret }
+    : null
+
+/** Envoi de courriels transactionnels. Absent : les envois sont signalés comme non effectués. */
+const resendApiKey = read('RESEND_API_KEY')
+
 export const env = {
   /** URI MongoDB complète. `MONGODB_URI` est accepté en repli pour compatibilité. */
   databaseURI: require_('DATABASE_URI', ['MONGODB_URI']),
@@ -61,6 +77,17 @@ export const env = {
   s3,
   redisURL: read('REDIS_URL'),
   isProduction: process.env.NODE_ENV === 'production',
+
+  /** Clé de signature des sessions Better Auth. Distincte de `PAYLOAD_SECRET`. */
+  authSecret: require_('BETTER_AUTH_SECRET'),
+  google,
+  resend: resendApiKey
+    ? {
+        apiKey: resendApiKey,
+        from: read('RESEND_FROM_EMAIL') ?? 'onboarding@resend.dev',
+        replyTo: read('RESEND_REPLY_TO'),
+      }
+    : null,
 } as const
 
 /**

@@ -1,27 +1,42 @@
 /**
- * Création des comptes super-administrateurs.
+ * Amorçage des comptes super-administrateurs, sur Better Auth.
  *
  * Aucun mot de passe n'est écrit dans le dépôt : il est demandé en saisie
  * masquée, ou lu depuis `BOOTSTRAP_ADMIN_PASSWORD` pour un déploiement
- * automatisé. Le script est idempotent — un compte déjà présent n'est jamais
- * écrasé et son mot de passe n'est pas réinitialisé.
+ * automatisé.
+ *
+ * Le script est **idempotent** et couvre deux situations :
+ *
+ *  1. Compte absent — l'utilisateur et ses identifiants sont créés.
+ *  2. Compte déjà présent en base mais sans identifiants Better Auth — c'est le
+ *     cas des comptes hérités de l'authentification Payload, dont l'empreinte
+ *     de mot de passe n'est pas transposable. Le document utilisateur est
+ *     conservé tel quel (contributions, relations, historique) et seuls des
+ *     identifiants Better Auth lui sont rattachés.
+ *
+ * Un compte disposant déjà d'identifiants n'est jamais réinitialisé.
  *
  *   npm run payload:bootstrap-admin
  */
 import { createInterface } from 'node:readline'
 import { stdin, stdout } from 'node:process'
 
-import config from '@payload-config'
-import { getPayload } from 'payload'
+import { ObjectId } from 'mongodb'
 
-type Candidate = { email: string; name: string; role: 'super-admin' }
+import { auth } from '@/lib/auth/server'
+import { getAuthDb } from '@/lib/auth/db'
+
+type Candidate = { email: string; name: string }
 
 const CANDIDATES: Candidate[] = [
-  { email: 'jdvalcy02@gmail.com', name: 'Jacques-Daguerre Valcy', role: 'super-admin' },
-  { email: 'synapsbranch@gmail.com', name: 'Administrateur technique', role: 'super-admin' },
+  { email: 'jdvalcy02@gmail.com', name: 'Jacques-Daguerre Valcy' },
+  { email: 'synapsbranch@gmail.com', name: 'Administrateur technique' },
 ]
 
 const MIN_PASSWORD_LENGTH = 12
+
+/** Émetteur utilisé par Better Auth pour un compte à mot de passe local. */
+const CREDENTIAL_ISSUER = 'local:credential'
 
 /** Lecture d'une ligne sans écho, pour ne jamais afficher un mot de passe. */
 const promptHidden = (question: string): Promise<string> =>
@@ -81,69 +96,93 @@ const resolvePassword = async (email: string): Promise<string> => {
 }
 
 /**
- * Comptes a traiter.
+ * Comptes à traiter.
  * `BOOTSTRAP_ADMIN_EMAIL` permet de n'en viser qu'un seul, afin d'attribuer un
- * mot de passe distinct a chaque compte lors d'un amorcage non interactif.
+ * mot de passe distinct à chaque compte lors d'un amorçage non interactif.
  */
 const resolveCandidates = (): Candidate[] => {
   const only = process.env.BOOTSTRAP_ADMIN_EMAIL?.trim().toLowerCase()
   if (!only) return CANDIDATES
   const known = CANDIDATES.find((candidate) => candidate.email.toLowerCase() === only)
   if (known) return [known]
-  return [
-    {
-      email: only,
-      name: process.env.BOOTSTRAP_ADMIN_NAME?.trim() || only,
-      role: 'super-admin',
-    },
-  ]
+  return [{ email: only, name: process.env.BOOTSTRAP_ADMIN_NAME?.trim() || only }]
 }
 
-const run = async (): Promise<void> => {
-  const payload = await getPayload({ config })
+/** Normalisation identique à celle utilisée par la migration : appariement fiable. */
+const normalizeEmail = (value: string): string => value.trim().toLowerCase()
 
-  console.log('\nCréation des comptes super-administrateurs')
+const run = async (): Promise<void> => {
+  const ctx = await auth.$context
+  const db = getAuthDb()
+  const users = db.collection('users')
+
+  console.log('\nAmorçage des comptes super-administrateurs')
   console.log('──────────────────────────────────────────')
 
   let created = 0
-  let skipped = 0
+  let linked = 0
+  let unchanged = 0
 
   for (const candidate of resolveCandidates()) {
-    const existing = await payload.find({
-      collection: 'users',
-      where: { email: { equals: candidate.email } },
-      limit: 1,
-      overrideAccess: true,
-    })
+    const email = normalizeEmail(candidate.email)
+    const existing = await ctx.internalAdapter.findUserByEmail(email)
 
-    if (existing.totalDocs > 0) {
-      console.log(`  • ${candidate.email} — déjà présent, aucune modification.`)
-      skipped += 1
+    if (!existing) {
+      const password = await resolvePassword(email)
+      const user = await ctx.internalAdapter.createUser(
+        { email, name: candidate.name },
+        // Origine du provisionnement : amorçage administrateur, hors requête HTTP.
+        { method: 'admin' },
+      )
+      await ctx.internalAdapter.createAccount({
+        userId: user.id,
+        providerId: 'credential',
+        issuer: CREDENTIAL_ISSUER,
+        accountId: user.id,
+        password: await ctx.password.hash(password),
+      })
+      // `role` est `input: false` : il ne peut pas être posé à la création.
+      // Il est écrit ici, côté serveur, hors de toute requête client.
+      await users.updateOne(
+        { _id: new ObjectId(String(user.id)) },
+        { $set: { role: 'super-admin', active: true, suspended: false, forumBanned: false } },
+      )
+      console.log(`  ✓ ${email} — compte super-administrateur créé.`)
+      created += 1
       continue
     }
 
-    const password = await resolvePassword(candidate.email)
+    const accounts = await ctx.internalAdapter.findAccounts(existing.user.id)
+    const hasCredential = accounts.some((account) => account.providerId === 'credential')
 
-    await payload.create({
-      collection: 'users',
-      data: {
-        email: candidate.email,
-        name: candidate.name,
-        role: candidate.role,
-        active: true,
-        password,
-      },
-      overrideAccess: true,
-      context: { disableRevalidate: true },
-    })
+    if (hasCredential) {
+      console.log(`  • ${email} — identifiants déjà en place, aucune modification.`)
+      unchanged += 1
+    } else {
+      // Compte hérité de l'authentification Payload : l'empreinte de mot de
+      // passe n'est pas transposable, on rattache de nouveaux identifiants sans
+      // toucher au document utilisateur ni à ses relations.
+      const password = await resolvePassword(email)
+      await ctx.internalAdapter.createAccount({
+        userId: existing.user.id,
+        providerId: 'credential',
+        issuer: CREDENTIAL_ISSUER,
+        accountId: existing.user.id,
+        password: await ctx.password.hash(password),
+      })
+      console.log(`  ✓ ${email} — identifiants Better Auth rattachés au compte existant.`)
+      linked += 1
+    }
 
-    console.log(`  ✓ ${candidate.email} — compte super-administrateur créé.`)
-    created += 1
+    await users.updateOne(
+      { _id: new ObjectId(String(existing.user.id)) },
+      { $set: { role: 'super-admin', active: true, suspended: false } },
+    )
   }
 
   console.log('──────────────────────────────────────────')
-  console.log(`${created} compte(s) créé(s), ${skipped} inchangé(s).`)
-  console.log('Connexion : /admin\n')
+  console.log(`${created} créé(s), ${linked} rattaché(s), ${unchanged} inchangé(s).`)
+  console.log('Connexion : /connexion — administration : /admin — CMS : /cms\n')
 
   process.exit(0)
 }

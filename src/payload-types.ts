@@ -1074,7 +1074,7 @@ export interface Article {
   _status?: ('draft' | 'published') | null;
 }
 /**
- * Comptes ayant accès à ce panneau. Seuls les super-administrateurs peuvent créer un compte ou modifier un rôle.
+ * Comptes du site. Seuls les super-administrateurs peuvent modifier un rôle ou suspendre un compte.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
@@ -1083,14 +1083,47 @@ export interface User {
   id: string;
   name: string;
   /**
-   * Éditeur : contenu et médias. Super-administrateur : accès complet, y compris les comptes.
+   * Client : espace client uniquement. Administrateur : contenu et médias. Super-administrateur : accès complet, y compris les comptes.
    */
-  role: 'super-admin' | 'editor';
+  role: 'customer' | 'editor' | 'super-admin';
   /**
    * Décocher empêche la connexion sans supprimer le compte ni ses contributions.
    */
   active?: boolean | null;
+  /**
+   * Un compte suspendu perd l’accès à l’espace client et le droit de publier dans la communauté.
+   */
+  suspended?: boolean | null;
+  /**
+   * Bloque les commentaires et le forum sans retirer l’accès au reste de l’espace client.
+   */
+  forumBanned?: boolean | null;
   lastLogin?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  avatar?: (string | null) | Media;
+  phone?: string | null;
+  company?: string | null;
+  jobTitle?: string | null;
+  country?: string | null;
+  industry?: string | null;
+  website?: string | null;
+  preferredLocale?: ('fr' | 'en') | null;
+  /**
+   * Identifiant IANA, ex. « America/Port-au-Prince ». Sert à afficher les rendez-vous.
+   */
+  timezone?: string | null;
+  notificationPreferences?: {
+    messages?: boolean | null;
+    proposals?: boolean | null;
+    invoices?: boolean | null;
+    appointments?: boolean | null;
+    community?: boolean | null;
+  };
+  /**
+   * Reflète le consentement. La collecte réelle reste dans « Abonnés à l’infolettre ».
+   */
+  newsletterOptIn?: boolean | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -3056,7 +3089,30 @@ export interface UsersSelect<T extends boolean = true> {
   name?: T;
   role?: T;
   active?: T;
+  suspended?: T;
+  forumBanned?: T;
   lastLogin?: T;
+  firstName?: T;
+  lastName?: T;
+  avatar?: T;
+  phone?: T;
+  company?: T;
+  jobTitle?: T;
+  country?: T;
+  industry?: T;
+  website?: T;
+  preferredLocale?: T;
+  timezone?: T;
+  notificationPreferences?:
+    | T
+    | {
+        messages?: T;
+        proposals?: T;
+        invoices?: T;
+        appointments?: T;
+        community?: T;
+      };
+  newsletterOptIn?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
