@@ -44,7 +44,14 @@ import {
   Services,
   Users,
 } from './payload/collections'
-import { Footer, Header, SiteSettings } from './payload/globals'
+import {
+  BillingSettings,
+  ClientSpaceSettings,
+  CommunitySettings,
+  Footer,
+  Header,
+  SiteSettings,
+} from './payload/globals'
 import { mediaStoragePlugin } from './payload/storage'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -129,7 +136,7 @@ export default buildConfig({
     AuditLog,
   ],
 
-  globals: [SiteSettings, Header, Footer],
+  globals: [SiteSettings, Header, Footer, CommunitySettings, ClientSpaceSettings, BillingSettings],
 
   db: mongooseAdapter({
     url: env.databaseURI,

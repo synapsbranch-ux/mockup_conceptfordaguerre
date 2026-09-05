@@ -155,11 +155,17 @@ export interface Config {
     siteSettings: SiteSetting;
     header: Header;
     footer: Footer;
+    communitySettings: CommunitySetting;
+    clientSpaceSettings: ClientSpaceSetting;
+    billingSettings: BillingSetting;
   };
   globalsSelect: {
     siteSettings: SiteSettingsSelect<false> | SiteSettingsSelect<true>;
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
+    communitySettings: CommunitySettingsSelect<false> | CommunitySettingsSelect<true>;
+    clientSpaceSettings: ClientSpaceSettingsSelect<false> | ClientSpaceSettingsSelect<true>;
+    billingSettings: BillingSettingsSelect<false> | BillingSettingsSelect<true>;
   };
   locale: null;
   widgets: {
@@ -5017,6 +5023,111 @@ export interface Footer {
   createdAt?: string | null;
 }
 /**
+ * Présentation du forum, règles de participation et modération des commentaires.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "communitySettings".
+ */
+export interface CommunitySetting {
+  id: string;
+  /**
+   * Décocher masque le forum du site public et ferme la publication, sans rien supprimer.
+   */
+  forumEnabled?: boolean | null;
+  forumTitle?: string | null;
+  /**
+   * Affichée en tête du fil et utilisée comme description SEO.
+   */
+  forumDescription?: string | null;
+  /**
+   * Affichées sur la page du forum et rappelées au moment de publier. Texte brut.
+   */
+  forumRules?: string | null;
+  forumJoinCta?: string | null;
+  forumEmptyState?: string | null;
+  homepageEnabled?: boolean | null;
+  homepageTitle?: string | null;
+  homepageIntro?: string | null;
+  homepageCount?: number | null;
+  commentsEnabledByDefault?: boolean | null;
+  /**
+   * Réglage global. Chaque article peut le surcharger dans son propre panneau.
+   */
+  commentsModeration: 'direct' | 'premoderated';
+  commentsIntro?: string | null;
+  commentsSignedOutCta?: string | null;
+  commentsEmptyState?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * Textes d’accueil, états vides et présentation de la réservation.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "clientSpaceSettings".
+ */
+export interface ClientSpaceSetting {
+  id: string;
+  /**
+   * {prenom} est remplacé par le prénom de la personne, ou son nom si le prénom est absent.
+   */
+  welcomeTitle?: string | null;
+  welcomeIntro?: string | null;
+  quickActionsTitle?: string | null;
+  emptyQuotes?: string | null;
+  emptyProposals?: string | null;
+  emptyInvoices?: string | null;
+  emptyProjects?: string | null;
+  emptyDocuments?: string | null;
+  emptyMessages?: string | null;
+  emptyAppointments?: string | null;
+  emptyNotifications?: string | null;
+  bookingEnabled?: boolean | null;
+  bookingTitle?: string | null;
+  bookingIntro?: string | null;
+  bookingConfirmation?: string | null;
+  bookingPolicy?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * Coordonnées de l’émetteur, numérotation, taxes et devise par défaut.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "billingSettings".
+ */
+export interface BillingSetting {
+  id: string;
+  companyName?: string | null;
+  companyEmail?: string | null;
+  companyPhone?: string | null;
+  companyAddress?: string | null;
+  taxIdentifiers?:
+    | {
+        label: string;
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Ex. « FA » donne FA-2026-0001.
+   */
+  invoicePrefix?: string | null;
+  /**
+   * Compteur persistant. Il n’est jamais recalculé depuis les factures existantes : une facture annulée ne libère pas son numéro.
+   */
+  invoiceNextNumber?: number | null;
+  invoiceNumberPadding?: number | null;
+  includeYear?: boolean | null;
+  defaultCurrency?: ('CAD' | 'USD' | 'EUR' | 'HTG') | null;
+  defaultTaxRate?: number | null;
+  defaultPaymentTermsDays?: number | null;
+  defaultPaymentTerms?: string | null;
+  invoiceFooter?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "siteSettings_select".
  */
@@ -5258,6 +5369,84 @@ export interface FooterSelect<T extends boolean = true> {
       };
   copyright?: T;
   signature?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "communitySettings_select".
+ */
+export interface CommunitySettingsSelect<T extends boolean = true> {
+  forumEnabled?: T;
+  forumTitle?: T;
+  forumDescription?: T;
+  forumRules?: T;
+  forumJoinCta?: T;
+  forumEmptyState?: T;
+  homepageEnabled?: T;
+  homepageTitle?: T;
+  homepageIntro?: T;
+  homepageCount?: T;
+  commentsEnabledByDefault?: T;
+  commentsModeration?: T;
+  commentsIntro?: T;
+  commentsSignedOutCta?: T;
+  commentsEmptyState?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "clientSpaceSettings_select".
+ */
+export interface ClientSpaceSettingsSelect<T extends boolean = true> {
+  welcomeTitle?: T;
+  welcomeIntro?: T;
+  quickActionsTitle?: T;
+  emptyQuotes?: T;
+  emptyProposals?: T;
+  emptyInvoices?: T;
+  emptyProjects?: T;
+  emptyDocuments?: T;
+  emptyMessages?: T;
+  emptyAppointments?: T;
+  emptyNotifications?: T;
+  bookingEnabled?: T;
+  bookingTitle?: T;
+  bookingIntro?: T;
+  bookingConfirmation?: T;
+  bookingPolicy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "billingSettings_select".
+ */
+export interface BillingSettingsSelect<T extends boolean = true> {
+  companyName?: T;
+  companyEmail?: T;
+  companyPhone?: T;
+  companyAddress?: T;
+  taxIdentifiers?:
+    | T
+    | {
+        label?: T;
+        value?: T;
+        id?: T;
+      };
+  invoicePrefix?: T;
+  invoiceNextNumber?: T;
+  invoiceNumberPadding?: T;
+  includeYear?: T;
+  defaultCurrency?: T;
+  defaultTaxRate?: T;
+  defaultPaymentTermsDays?: T;
+  defaultPaymentTerms?: T;
+  invoiceFooter?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

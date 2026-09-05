@@ -19,7 +19,7 @@
     "payload:migrate-media": "cross-env NODE_OPTIONS=--no-deprecation payload run src/payload/scripts/migrateMedia.ts",
     "payload:seed": "cross-env NODE_OPTIONS=--no-deprecation payload run src/payload/scripts/seed.ts",
     "payload:migrate-content": "npm run payload:migrate-media && npm run payload:seed",
-    "test": "node --env-file-if-exists=.env --conditions=react-server --import tsx --test 'tests/**/*.test.ts'",
+    "test": "node --env-file-if-exists=.env --conditions=react-server --import tsx --test --test-concurrency=1 'tests/**/*.test.ts'",
     "verify:routes": "node scripts/verify-routes.mjs",
     "images:optimize": "node scripts/optimize-images.mjs",
     "seo:audit": "node scripts/seo-audit.mjs",

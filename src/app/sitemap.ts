@@ -2,6 +2,7 @@ import type { MetadataRoute } from 'next'
 
 import { env } from '@/lib/env'
 import { getArticles, getPayloadClient, getProjects, getSiteSettings } from '@/lib/payload'
+import { getPublicTopicSlugs } from '@/lib/forum'
 import { pagePath } from '@/lib/links'
 
 /**
@@ -70,6 +71,31 @@ const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
       changeFrequency: 'monthly',
       priority: 0.7,
     })
+  }
+
+  // Forum : uniquement les discussions publiees. `getPublicTopicSlugs` borne
+  // deja la requete au statut « published », donc aucun contenu masque,
+  // archive ou en brouillon ne peut atteindre le plan du site.
+  const community = await payload
+    .findGlobal({ slug: 'communitySettings', depth: 0 })
+    .catch(() => null)
+
+  if (community?.forumEnabled !== false) {
+    entries.push({
+      url: url('/forum'),
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.6,
+    })
+
+    for (const topic of await getPublicTopicSlugs()) {
+      entries.push({
+        url: url(`/forum/${topic.slug}`),
+        lastModified: new Date(topic.updatedAt),
+        changeFrequency: 'weekly',
+        priority: 0.5,
+      })
+    }
   }
 
   return entries

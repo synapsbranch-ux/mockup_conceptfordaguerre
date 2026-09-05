@@ -1,3 +1,6 @@
+export { BillingSettings } from './BillingSettings'
+export { ClientSpaceSettings } from './ClientSpaceSettings'
+export { CommunitySettings } from './CommunitySettings'
 export { Footer } from './Footer'
 export { Header } from './Header'
 export { SiteSettings } from './SiteSettings'

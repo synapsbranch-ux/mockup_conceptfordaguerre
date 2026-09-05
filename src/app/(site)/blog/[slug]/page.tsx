@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import { RenderBlocks } from '@/components/blocks/RenderBlocks'
 import { CMSImage } from '@/components/media/CMSImage'
 import { estimateReadingTime, RichText } from '@/components/richtext/RichText'
+import { CommentSection } from '@/components/comments/CommentSection'
 import { SiteShell } from '@/components/site/SiteShell'
 import { StructuredData } from '@/components/site/StructuredData'
 import { getArticle, getSiteSettings } from '@/lib/payload'
@@ -79,6 +80,10 @@ const ArticlePage = async ({ params }: Args) => {
           <RenderBlocks blocks={article.blocks} />
         </div>
       </article>
+
+      {/* Commentaires publics. La section se retire d'elle-meme si l'article
+          les a fermes. */}
+      <CommentSection article={article} />
     </SiteShell>
   )
 }
