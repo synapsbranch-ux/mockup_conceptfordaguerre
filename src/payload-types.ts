@@ -81,6 +81,20 @@ export interface Config {
     forumReactions: ForumReaction;
     forumSubscriptions: ForumSubscription;
     forumReports: ForumReport;
+    quoteRequests: QuoteRequest;
+    proposals: Proposal;
+    clientProjects: ClientProject;
+    invoices: Invoice;
+    payments: Payment;
+    meetingTypes: MeetingType;
+    availabilityRules: AvailabilityRule;
+    availabilityExceptions: AvailabilityException;
+    appointments: Appointment;
+    documents: Document;
+    downloadEvents: DownloadEvent;
+    conversations: Conversation;
+    messages: Message;
+    internalNotes: InternalNote;
     contactSubmissions: ContactSubmission;
     newsletterSubscribers: NewsletterSubscriber;
     notifications: Notification;
@@ -108,6 +122,20 @@ export interface Config {
     forumReactions: ForumReactionsSelect<false> | ForumReactionsSelect<true>;
     forumSubscriptions: ForumSubscriptionsSelect<false> | ForumSubscriptionsSelect<true>;
     forumReports: ForumReportsSelect<false> | ForumReportsSelect<true>;
+    quoteRequests: QuoteRequestsSelect<false> | QuoteRequestsSelect<true>;
+    proposals: ProposalsSelect<false> | ProposalsSelect<true>;
+    clientProjects: ClientProjectsSelect<false> | ClientProjectsSelect<true>;
+    invoices: InvoicesSelect<false> | InvoicesSelect<true>;
+    payments: PaymentsSelect<false> | PaymentsSelect<true>;
+    meetingTypes: MeetingTypesSelect<false> | MeetingTypesSelect<true>;
+    availabilityRules: AvailabilityRulesSelect<false> | AvailabilityRulesSelect<true>;
+    availabilityExceptions: AvailabilityExceptionsSelect<false> | AvailabilityExceptionsSelect<true>;
+    appointments: AppointmentsSelect<false> | AppointmentsSelect<true>;
+    documents: DocumentsSelect<false> | DocumentsSelect<true>;
+    downloadEvents: DownloadEventsSelect<false> | DownloadEventsSelect<true>;
+    conversations: ConversationsSelect<false> | ConversationsSelect<true>;
+    messages: MessagesSelect<false> | MessagesSelect<true>;
+    internalNotes: InternalNotesSelect<false> | InternalNotesSelect<true>;
     contactSubmissions: ContactSubmissionsSelect<false> | ContactSubmissionsSelect<true>;
     newsletterSubscribers: NewsletterSubscribersSelect<false> | NewsletterSubscribersSelect<true>;
     notifications: NotificationsSelect<false> | NotificationsSelect<true>;
@@ -2026,6 +2054,511 @@ export interface ForumReport {
   createdAt: string;
 }
 /**
+ * Demandes reçues, de leur brouillon à leur clôture.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "quoteRequests".
+ */
+export interface QuoteRequest {
+  id: string;
+  /**
+   * Attribuée par le serveur.
+   */
+  reference?: string | null;
+  /**
+   * Vide tant qu’une demande invité n’est pas réclamée.
+   */
+  customer?: (string | null) | User;
+  guestEmail?: string | null;
+  guestName?: string | null;
+  claimedAt?: string | null;
+  status: 'draft' | 'submitted' | 'in_review' | 'quoted' | 'accepted' | 'declined' | 'closed';
+  priority?: ('low' | 'normal' | 'high') | null;
+  assignee?: (string | null) | User;
+  service?: (string | null) | Service;
+  objectives: string;
+  budgetRange?: ('under_2k' | '2k_5k' | '5k_15k' | 'over_15k' | 'unknown') | null;
+  desiredStart?: string | null;
+  desiredDeadline?: string | null;
+  attachments?: (string | Document)[] | null;
+  submittedAt?: string | null;
+  /**
+   * Strictement interne. N’apparaît jamais dans l’espace client ni dans les conversations.
+   */
+  internalNotes?: string | null;
+  /**
+   * Journal des changements de statut.
+   */
+  timeline?:
+    | {
+        status?: string | null;
+        at?: string | null;
+        by?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Ressources publiques et documents privés. Le téléchargement d’un document privé est autorisé requête par requête.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "documents".
+ */
+export interface Document {
+  id: string;
+  title: string;
+  description?: string | null;
+  category: 'guide' | 'template' | 'report' | 'contract' | 'deliverable' | 'invoice' | 'other';
+  /**
+   * Par défaut « clients désignés » : un document ne devient jamais public par inadvertance.
+   */
+  visibility: 'public' | 'authenticated' | 'assigned';
+  assignedTo?: (string | User)[] | null;
+  archived?: boolean | null;
+  downloadCount?: number | null;
+  /**
+   * Interne. N’apparaît jamais dans l’espace client.
+   */
+  internalNote?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * Une proposition envoyée ne peut plus être modifiée. Créer une nouvelle version pour corriger.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "proposals".
+ */
+export interface Proposal {
+  id: string;
+  reference?: string | null;
+  quoteRequest?: (string | null) | QuoteRequest;
+  customer: string | User;
+  status: 'draft' | 'sent' | 'accepted' | 'declined' | 'expired';
+  version?: number | null;
+  title: string;
+  summary?: string | null;
+  /**
+   * Les montants sont exprimés en centimes. Les totaux sont calculés par le serveur.
+   */
+  lines?:
+    | {
+        description: string;
+        quantity: number;
+        /**
+         * Ex. 125000 pour 1 250,00 $.
+         */
+        unitPrice: number;
+        taxRate?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  discountKind?: ('none' | 'fixed' | 'percent') | null;
+  /**
+   * Centimes si montant fixe, pourcentage sinon.
+   */
+  discountValue?: number | null;
+  currency?: ('CAD' | 'USD' | 'EUR' | 'HTG') | null;
+  /**
+   * Recalculés par le serveur à chaque enregistrement, à partir des lignes. Non modifiables.
+   */
+  totals?: {
+    subtotal?: number | null;
+    discountAmount?: number | null;
+    taxAmount?: number | null;
+    total?: number | null;
+    balanceDue?: number | null;
+  };
+  validUntil?: string | null;
+  sentAt?: string | null;
+  terms?: string | null;
+  decision?: {
+    decidedAt?: string | null;
+    note?: string | null;
+  };
+  /**
+   * Renseigné à la conversion. Empêche toute seconde conversion.
+   */
+  convertedProject?: (string | null) | ClientProject;
+  /**
+   * Strictement interne. Jamais exposée au client.
+   */
+  internalNotes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Suivi d’exécution des prestations. Distinct des réalisations publiques.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "clientProjects".
+ */
+export interface ClientProject {
+  id: string;
+  title: string;
+  customer: string | User;
+  status: 'planned' | 'active' | 'on_hold' | 'completed' | 'cancelled';
+  progress?: number | null;
+  startDate?: string | null;
+  endDate?: string | null;
+  summary?: string | null;
+  /**
+   * Une proposition ne peut être convertie qu’une seule fois.
+   */
+  sourceProposal?: (string | null) | Proposal;
+  service?: (string | null) | Service;
+  milestones?:
+    | {
+        title: string;
+        dueDate?: string | null;
+        done?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Visibles par le client dans son espace.
+   */
+  updates?:
+    | {
+        title: string;
+        body?: string | null;
+        publishedAt?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  documents?: (string | Document)[] | null;
+  /**
+   * Strictement interne. Jamais exposée au client.
+   */
+  internalNotes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Une facture émise ne peut plus être modifiée. L’annuler conserve l’historique.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "invoices".
+ */
+export interface Invoice {
+  id: string;
+  /**
+   * Attribué par le serveur à l’émission, séquentiel et unique.
+   */
+  number?: string | null;
+  customer: string | User;
+  status: 'draft' | 'sent' | 'partially_paid' | 'paid' | 'overdue' | 'cancelled';
+  issueDate?: string | null;
+  dueDate?: string | null;
+  /**
+   * Figées à l’émission : la facture reste fidèle même si le profil du client change ensuite.
+   */
+  billTo?: {
+    name?: string | null;
+    email?: string | null;
+    address?: string | null;
+    taxId?: string | null;
+  };
+  /**
+   * Les montants sont exprimés en centimes. Les totaux sont calculés par le serveur.
+   */
+  lines?:
+    | {
+        description: string;
+        quantity: number;
+        /**
+         * Ex. 125000 pour 1 250,00 $.
+         */
+        unitPrice: number;
+        taxRate?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  discountKind?: ('none' | 'fixed' | 'percent') | null;
+  /**
+   * Centimes si montant fixe, pourcentage sinon.
+   */
+  discountValue?: number | null;
+  currency?: ('CAD' | 'USD' | 'EUR' | 'HTG') | null;
+  /**
+   * Recalculés par le serveur à chaque enregistrement, à partir des lignes. Non modifiables.
+   */
+  totals?: {
+    subtotal?: number | null;
+    discountAmount?: number | null;
+    taxAmount?: number | null;
+    total?: number | null;
+    balanceDue?: number | null;
+  };
+  depositPaid?: number | null;
+  /**
+   * Somme des paiements enregistrés.
+   */
+  amountPaid?: number | null;
+  paymentTerms?: string | null;
+  /**
+   * Visibles par le client sur la facture.
+   */
+  publicNotes?: string | null;
+  /**
+   * Strictement interne. Jamais imprimée ni exposée au client.
+   */
+  internalNotes?: string | null;
+  links?: {
+    proposal?: (string | null) | Proposal;
+    project?: (string | null) | ClientProject;
+    quoteRequest?: (string | null) | QuoteRequest;
+  };
+  cancelledAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Règlements constatés hors ligne. Aucune donnée bancaire n’est conservée.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payments".
+ */
+export interface Payment {
+  id: string;
+  invoice: string | Invoice;
+  /**
+   * Repris de la facture.
+   */
+  customer: string | User;
+  amount: number;
+  method: 'transfer' | 'cheque' | 'cash' | 'other';
+  receivedAt: string;
+  /**
+   * Numéro de virement ou de chèque. Aucune coordonnée bancaire.
+   */
+  reference?: string | null;
+  note?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Formats de rencontre proposés. Désactiver retire le format sans perdre l’historique.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "meetingTypes".
+ */
+export interface MeetingType {
+  id: string;
+  /**
+   * Identifiant utilisé dans l’URL publique. Généré depuis le titre s’il est laissé vide. Modifier un slug déjà en ligne casse les liens existants.
+   */
+  slug: string;
+  title: string;
+  /**
+   * Affichée au client au moment de choisir un format.
+   */
+  description?: string | null;
+  durationMinutes: number;
+  /**
+   * Temps réservé après la rencontre, non proposé à la réservation.
+   */
+  bufferMinutes?: number | null;
+  /**
+   * Aucun créneau n’est proposé en deçà de ce délai.
+   */
+  minimumNoticeHours?: number | null;
+  horizonDays?: number | null;
+  /**
+   * Personne dont les disponibilités et le calendrier sont consultés.
+   */
+  host: string | User;
+  locationKind?: ('video' | 'phone' | 'in_person') | null;
+  /**
+   * Coché, la réservation arrive en « demandée » et attend une confirmation.
+   */
+  requiresConfirmation?: boolean | null;
+  active?: boolean | null;
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Plages recurrentes, exprimees dans le fuseau de l’hote.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "availabilityRules".
+ */
+export interface AvailabilityRule {
+  id: string;
+  host: string | User;
+  weekday: '1' | '2' | '3' | '4' | '5' | '6' | '0';
+  startTime: string;
+  endTime: string;
+  /**
+   * Identifiant IANA. Les heures ci-dessus s’y rapportent.
+   */
+  timezone: string;
+  active?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Jours bloques ou plages exceptionnelles. Priment sur les regles hebdomadaires.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "availabilityExceptions".
+ */
+export interface AvailabilityException {
+  id: string;
+  host: string | User;
+  date: string;
+  kind: 'blocked' | 'blocked_range' | 'extra';
+  startTime?: string | null;
+  endTime?: string | null;
+  timezone: string;
+  reason?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Toutes les dates sont stockées en UTC et affichées au fuseau de chacun.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "appointments".
+ */
+export interface Appointment {
+  id: string;
+  reference?: string | null;
+  /**
+   * Garantit qu’un créneau n’est pris qu’une fois. Retirée à l’annulation.
+   */
+  slotKey?: string | null;
+  customer?: (string | null) | User;
+  guestEmail?: string | null;
+  guestName?: string | null;
+  host: string | User;
+  meetingType: string | MeetingType;
+  status: 'requested' | 'confirmed' | 'completed' | 'cancelled' | 'no_show';
+  startAt: string;
+  endAt: string;
+  /**
+   * Sert uniquement à l’affichage : la donnée reste en UTC.
+   */
+  customerTimezone: string;
+  objective: string;
+  meetingUrl?: string | null;
+  links?: {
+    quoteRequest?: (string | null) | QuoteRequest;
+    project?: (string | null) | ClientProject;
+    invoice?: (string | null) | Invoice;
+  };
+  rescheduledFrom?: string | null;
+  cancellationReason?: string | null;
+  /**
+   * Reflète l’envoi réel des courriels. Un échec est consigné tel quel, jamais masqué en succès.
+   */
+  notificationState?: {
+    lastAttemptAt?: string | null;
+    lastResult?: ('sent' | 'failed' | 'not_configured') | null;
+    lastError?: string | null;
+  };
+  /**
+   * Strictement interne. Jamais exposée au client.
+   */
+  internalNotes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Registre en ajout seul. Aucune adresse IP n’est conservée.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "downloadEvents".
+ */
+export interface DownloadEvent {
+  id: string;
+  /**
+   * Vide pour un téléchargement anonyme d’une ressource publique.
+   */
+  user?: (string | null) | User;
+  document: string | Document;
+  /**
+   * Figé : l’historique reste lisible même si le document est renommé.
+   */
+  documentTitle?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "conversations".
+ */
+export interface Conversation {
+  id: string;
+  subject: string;
+  customer: string | User;
+  contextKind?: ('general' | 'quote' | 'service' | 'invoice' | 'project' | 'appointment' | 'document') | null;
+  context?: {
+    quoteRequest?: (string | null) | QuoteRequest;
+    project?: (string | null) | ClientProject;
+    invoice?: (string | null) | Invoice;
+    appointment?: (string | null) | Appointment;
+    document?: (string | null) | Document;
+  };
+  status: 'open' | 'closed' | 'archived';
+  assignee?: (string | null) | User;
+  lastMessageAt?: string | null;
+  unreadForCustomer?: number | null;
+  unreadForStaff?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "messages".
+ */
+export interface Message {
+  id: string;
+  conversation: string | Conversation;
+  author: string | User;
+  /**
+   * Déduit de la session, jamais transmis par le navigateur.
+   */
+  authorSide: 'customer' | 'staff';
+  /**
+   * Texte brut. Aucun HTML n’est interprété au rendu.
+   */
+  body: string;
+  excerpt?: string | null;
+  attachments?: (string | Document)[] | null;
+  readAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Strictement interne. Jamais visible par un client, sous aucune forme.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "internalNotes".
+ */
+export interface InternalNote {
+  id: string;
+  author: string | User;
+  subjectKind: 'conversation' | 'quoteRequest' | 'proposal' | 'invoice' | 'clientProject' | 'appointment' | 'user';
+  subjectId: string;
+  body: string;
+  excerpt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Messages reçus via la page Contact. Contenu privé : jamais exposé publiquement.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2324,6 +2857,62 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'forumReports';
         value: string | ForumReport;
+      } | null)
+    | ({
+        relationTo: 'quoteRequests';
+        value: string | QuoteRequest;
+      } | null)
+    | ({
+        relationTo: 'proposals';
+        value: string | Proposal;
+      } | null)
+    | ({
+        relationTo: 'clientProjects';
+        value: string | ClientProject;
+      } | null)
+    | ({
+        relationTo: 'invoices';
+        value: string | Invoice;
+      } | null)
+    | ({
+        relationTo: 'payments';
+        value: string | Payment;
+      } | null)
+    | ({
+        relationTo: 'meetingTypes';
+        value: string | MeetingType;
+      } | null)
+    | ({
+        relationTo: 'availabilityRules';
+        value: string | AvailabilityRule;
+      } | null)
+    | ({
+        relationTo: 'availabilityExceptions';
+        value: string | AvailabilityException;
+      } | null)
+    | ({
+        relationTo: 'appointments';
+        value: string | Appointment;
+      } | null)
+    | ({
+        relationTo: 'documents';
+        value: string | Document;
+      } | null)
+    | ({
+        relationTo: 'downloadEvents';
+        value: string | DownloadEvent;
+      } | null)
+    | ({
+        relationTo: 'conversations';
+        value: string | Conversation;
+      } | null)
+    | ({
+        relationTo: 'messages';
+        value: string | Message;
+      } | null)
+    | ({
+        relationTo: 'internalNotes';
+        value: string | InternalNote;
       } | null)
     | ({
         relationTo: 'contactSubmissions';
@@ -3534,6 +4123,366 @@ export interface ForumReportsSelect<T extends boolean = true> {
   status?: T;
   resolvedBy?: T;
   moderatorNote?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "quoteRequests_select".
+ */
+export interface QuoteRequestsSelect<T extends boolean = true> {
+  reference?: T;
+  customer?: T;
+  guestEmail?: T;
+  guestName?: T;
+  claimedAt?: T;
+  status?: T;
+  priority?: T;
+  assignee?: T;
+  service?: T;
+  objectives?: T;
+  budgetRange?: T;
+  desiredStart?: T;
+  desiredDeadline?: T;
+  attachments?: T;
+  submittedAt?: T;
+  internalNotes?: T;
+  timeline?:
+    | T
+    | {
+        status?: T;
+        at?: T;
+        by?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "proposals_select".
+ */
+export interface ProposalsSelect<T extends boolean = true> {
+  reference?: T;
+  quoteRequest?: T;
+  customer?: T;
+  status?: T;
+  version?: T;
+  title?: T;
+  summary?: T;
+  lines?:
+    | T
+    | {
+        description?: T;
+        quantity?: T;
+        unitPrice?: T;
+        taxRate?: T;
+        id?: T;
+      };
+  discountKind?: T;
+  discountValue?: T;
+  currency?: T;
+  totals?:
+    | T
+    | {
+        subtotal?: T;
+        discountAmount?: T;
+        taxAmount?: T;
+        total?: T;
+        balanceDue?: T;
+      };
+  validUntil?: T;
+  sentAt?: T;
+  terms?: T;
+  decision?:
+    | T
+    | {
+        decidedAt?: T;
+        note?: T;
+      };
+  convertedProject?: T;
+  internalNotes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "clientProjects_select".
+ */
+export interface ClientProjectsSelect<T extends boolean = true> {
+  title?: T;
+  customer?: T;
+  status?: T;
+  progress?: T;
+  startDate?: T;
+  endDate?: T;
+  summary?: T;
+  sourceProposal?: T;
+  service?: T;
+  milestones?:
+    | T
+    | {
+        title?: T;
+        dueDate?: T;
+        done?: T;
+        id?: T;
+      };
+  updates?:
+    | T
+    | {
+        title?: T;
+        body?: T;
+        publishedAt?: T;
+        id?: T;
+      };
+  documents?: T;
+  internalNotes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "invoices_select".
+ */
+export interface InvoicesSelect<T extends boolean = true> {
+  number?: T;
+  customer?: T;
+  status?: T;
+  issueDate?: T;
+  dueDate?: T;
+  billTo?:
+    | T
+    | {
+        name?: T;
+        email?: T;
+        address?: T;
+        taxId?: T;
+      };
+  lines?:
+    | T
+    | {
+        description?: T;
+        quantity?: T;
+        unitPrice?: T;
+        taxRate?: T;
+        id?: T;
+      };
+  discountKind?: T;
+  discountValue?: T;
+  currency?: T;
+  totals?:
+    | T
+    | {
+        subtotal?: T;
+        discountAmount?: T;
+        taxAmount?: T;
+        total?: T;
+        balanceDue?: T;
+      };
+  depositPaid?: T;
+  amountPaid?: T;
+  paymentTerms?: T;
+  publicNotes?: T;
+  internalNotes?: T;
+  links?:
+    | T
+    | {
+        proposal?: T;
+        project?: T;
+        quoteRequest?: T;
+      };
+  cancelledAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payments_select".
+ */
+export interface PaymentsSelect<T extends boolean = true> {
+  invoice?: T;
+  customer?: T;
+  amount?: T;
+  method?: T;
+  receivedAt?: T;
+  reference?: T;
+  note?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "meetingTypes_select".
+ */
+export interface MeetingTypesSelect<T extends boolean = true> {
+  slug?: T;
+  title?: T;
+  description?: T;
+  durationMinutes?: T;
+  bufferMinutes?: T;
+  minimumNoticeHours?: T;
+  horizonDays?: T;
+  host?: T;
+  locationKind?: T;
+  requiresConfirmation?: T;
+  active?: T;
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "availabilityRules_select".
+ */
+export interface AvailabilityRulesSelect<T extends boolean = true> {
+  host?: T;
+  weekday?: T;
+  startTime?: T;
+  endTime?: T;
+  timezone?: T;
+  active?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "availabilityExceptions_select".
+ */
+export interface AvailabilityExceptionsSelect<T extends boolean = true> {
+  host?: T;
+  date?: T;
+  kind?: T;
+  startTime?: T;
+  endTime?: T;
+  timezone?: T;
+  reason?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "appointments_select".
+ */
+export interface AppointmentsSelect<T extends boolean = true> {
+  reference?: T;
+  slotKey?: T;
+  customer?: T;
+  guestEmail?: T;
+  guestName?: T;
+  host?: T;
+  meetingType?: T;
+  status?: T;
+  startAt?: T;
+  endAt?: T;
+  customerTimezone?: T;
+  objective?: T;
+  meetingUrl?: T;
+  links?:
+    | T
+    | {
+        quoteRequest?: T;
+        project?: T;
+        invoice?: T;
+      };
+  rescheduledFrom?: T;
+  cancellationReason?: T;
+  notificationState?:
+    | T
+    | {
+        lastAttemptAt?: T;
+        lastResult?: T;
+        lastError?: T;
+      };
+  internalNotes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "documents_select".
+ */
+export interface DocumentsSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  category?: T;
+  visibility?: T;
+  assignedTo?: T;
+  archived?: T;
+  downloadCount?: T;
+  internalNote?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "downloadEvents_select".
+ */
+export interface DownloadEventsSelect<T extends boolean = true> {
+  user?: T;
+  document?: T;
+  documentTitle?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "conversations_select".
+ */
+export interface ConversationsSelect<T extends boolean = true> {
+  subject?: T;
+  customer?: T;
+  contextKind?: T;
+  context?:
+    | T
+    | {
+        quoteRequest?: T;
+        project?: T;
+        invoice?: T;
+        appointment?: T;
+        document?: T;
+      };
+  status?: T;
+  assignee?: T;
+  lastMessageAt?: T;
+  unreadForCustomer?: T;
+  unreadForStaff?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "messages_select".
+ */
+export interface MessagesSelect<T extends boolean = true> {
+  conversation?: T;
+  author?: T;
+  authorSide?: T;
+  body?: T;
+  excerpt?: T;
+  attachments?: T;
+  readAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "internalNotes_select".
+ */
+export interface InternalNotesSelect<T extends boolean = true> {
+  author?: T;
+  subjectKind?: T;
+  subjectId?: T;
+  body?: T;
+  excerpt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

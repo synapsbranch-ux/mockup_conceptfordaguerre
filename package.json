@@ -23,7 +23,8 @@
     "verify:routes": "node scripts/verify-routes.mjs",
     "images:optimize": "node scripts/optimize-images.mjs",
     "seo:audit": "node scripts/seo-audit.mjs",
-    "auth:migrate": "cross-env NODE_OPTIONS=--no-deprecation payload run src/payload/scripts/migrateAuthUsers.ts"
+    "auth:migrate": "cross-env NODE_OPTIONS=--no-deprecation payload run src/payload/scripts/migrateAuthUsers.ts",
+    "db:ensure-indexes": "cross-env NODE_OPTIONS=--no-deprecation payload run src/payload/scripts/ensureIndexes.ts"
   },
   "dependencies": {
     "@better-auth/mongo-adapter": "^1.7.2",
