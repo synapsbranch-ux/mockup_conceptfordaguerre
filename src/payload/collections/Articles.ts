@@ -1,6 +1,8 @@
 import type { CollectionConfig } from 'payload'
 
-import { authenticated, authenticatedOrPublished } from '../access'
+import { authenticated } from '../access'
+import { articleReadAccess } from '../access/articles'
+import { staffWriteOnly } from '../access/ownership'
 import { articleBlocks } from '../blocks'
 import { imageFields } from '../fields/media'
 import { seoField } from '../fields/seo'
@@ -21,7 +23,7 @@ export const Articles: CollectionConfig = {
   },
   defaultSort: 'order',
   access: {
-    read: authenticatedOrPublished,
+    read: articleReadAccess,
     create: authenticated,
     update: authenticated,
     delete: authenticated,
@@ -49,6 +51,77 @@ export const Articles: CollectionConfig = {
       label: 'Mettre à la une',
       defaultValue: false,
       admin: { position: 'sidebar' },
+    },
+    {
+      name: 'visibility',
+      type: 'select',
+      label: 'Visibilité',
+      required: true,
+      defaultValue: 'public',
+      index: true,
+      options: [
+        { label: 'Publique', value: 'public' },
+        { label: 'Comptes connectés', value: 'authenticated' },
+        { label: 'Clients sélectionnés', value: 'private' },
+      ],
+      access: { create: staffWriteOnly, update: staffWriteOnly },
+      admin: {
+        position: 'sidebar',
+        description:
+          'Publique : visible de tous et indexable. Connectés : réservée aux comptes, jamais dans le plan du site. Sélectionnés : réservée aux clients désignés ci-dessous.',
+      },
+    },
+    {
+      name: 'authorizedCustomers',
+      type: 'relationship',
+      relationTo: 'users',
+      hasMany: true,
+      label: 'Clients autorisés',
+      access: { create: staffWriteOnly, update: staffWriteOnly },
+      admin: {
+        position: 'sidebar',
+        condition: (data) => data?.visibility === 'private',
+        description: 'Seuls ces comptes peuvent ouvrir l’article.',
+      },
+    },
+    {
+      name: 'commentsEnabled',
+      type: 'checkbox',
+      label: 'Commentaires ouverts',
+      defaultValue: true,
+      access: { create: staffWriteOnly, update: staffWriteOnly },
+      admin: {
+        position: 'sidebar',
+        description: 'Décocher ferme les commentaires sans masquer ceux déjà publiés.',
+      },
+    },
+    {
+      name: 'commentsMode',
+      type: 'select',
+      label: 'Modération des commentaires',
+      defaultValue: 'inherit',
+      options: [
+        { label: 'Réglage global du site', value: 'inherit' },
+        { label: 'Publication immédiate', value: 'direct' },
+        { label: 'Prémodération', value: 'premoderated' },
+      ],
+      access: { create: staffWriteOnly, update: staffWriteOnly },
+      admin: {
+        position: 'sidebar',
+        condition: (data) => data?.commentsEnabled !== false,
+      },
+    },
+    {
+      name: 'archived',
+      type: 'checkbox',
+      label: 'Archivé',
+      defaultValue: false,
+      index: true,
+      access: { create: staffWriteOnly, update: staffWriteOnly },
+      admin: {
+        position: 'sidebar',
+        description: 'Retire l’article des listes publiques sans le dépublier ni le supprimer.',
+      },
     },
     {
       name: 'author',
@@ -162,6 +235,11 @@ export const Articles: CollectionConfig = {
         },
       ],
     },
+  ],
+  indexes: [
+    // Listes publiques : statut de publication, visibilité, archivage, ordre.
+    { fields: ['_status', 'visibility', 'archived', 'order'] },
+    { fields: ['category', '_status'] },
   ],
   timestamps: true,
 }

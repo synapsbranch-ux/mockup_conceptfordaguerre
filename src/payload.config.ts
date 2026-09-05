@@ -10,11 +10,21 @@ import sharp from 'sharp'
 import { env, trustedOrigins } from '@/lib/env'
 
 import {
+  ArticleComments,
+  ArticleFavorites,
   Articles,
+  AuditLog,
   Commitments,
   ContactSubmissions,
+  ForumCategories,
+  ForumReactions,
+  ForumReplies,
+  ForumReports,
+  ForumSubscriptions,
+  ForumTopics,
   Media,
   NewsletterSubscribers,
+  Notifications,
   Pages,
   Projects,
   Services,
@@ -30,6 +40,13 @@ const MAX_UPLOAD_BYTES = 8 * 1024 * 1024
 
 export default buildConfig({
   serverURL: env.serverURL,
+
+  /**
+   * Le panneau CMS vit sur `/cms`. `/admin` est desormais le tableau de bord
+   * d'administration du site, construit sur shadcn/ui, qui pointe vers `/cms`
+   * pour l'edition des pages et des blocs.
+   */
+  routes: { admin: '/cms' },
   secret: env.payloadSecret,
 
   admin: {
@@ -57,15 +74,29 @@ export default buildConfig({
   },
 
   collections: [
+    // Contenu editorial
     Pages,
     Projects,
     Articles,
     Services,
     Commitments,
     Media,
+    // Communaute
+    ArticleComments,
+    ArticleFavorites,
+    ForumCategories,
+    ForumTopics,
+    ForumReplies,
+    ForumReactions,
+    ForumSubscriptions,
+    ForumReports,
+    // Relation client
     ContactSubmissions,
     NewsletterSubscribers,
+    Notifications,
+    // Systeme
     Users,
+    AuditLog,
   ],
 
   globals: [SiteSettings, Header, Footer],

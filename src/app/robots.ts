@@ -28,14 +28,14 @@ const robots = async (): Promise<MetadataRoute.Robots> => {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/admin', '/admin/', '/api/', '/space'],
+        disallow: ['/admin', '/admin/', '/cms', '/cms/', '/api/', '/space', '/espace-client', '/client', '/connexion', '/inscription'],
       },
       // Les robots d'IA generative sont laisses libres sur le contenu public :
       // `llms.txt` leur donne une vue synthetique du site.
       {
         userAgent: ['GPTBot', 'ClaudeBot', 'PerplexityBot', 'Google-Extended'],
         allow: '/',
-        disallow: ['/admin', '/admin/', '/api/'],
+        disallow: ['/admin', '/admin/', '/cms', '/cms/', '/api/', '/espace-client', '/client'],
       },
     ],
     sitemap: `${env.serverURL}/sitemap.xml`,

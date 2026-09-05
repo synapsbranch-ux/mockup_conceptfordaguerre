@@ -73,9 +73,19 @@ export interface Config {
     services: Service;
     commitments: Commitment;
     media: Media;
+    articleComments: ArticleComment;
+    articleFavorites: ArticleFavorite;
+    forumCategories: ForumCategory;
+    forumTopics: ForumTopic;
+    forumReplies: ForumReply;
+    forumReactions: ForumReaction;
+    forumSubscriptions: ForumSubscription;
+    forumReports: ForumReport;
     contactSubmissions: ContactSubmission;
     newsletterSubscribers: NewsletterSubscriber;
+    notifications: Notification;
     users: User;
+    auditLog: AuditLog;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
@@ -90,9 +100,19 @@ export interface Config {
     services: ServicesSelect<false> | ServicesSelect<true>;
     commitments: CommitmentsSelect<false> | CommitmentsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    articleComments: ArticleCommentsSelect<false> | ArticleCommentsSelect<true>;
+    articleFavorites: ArticleFavoritesSelect<false> | ArticleFavoritesSelect<true>;
+    forumCategories: ForumCategoriesSelect<false> | ForumCategoriesSelect<true>;
+    forumTopics: ForumTopicsSelect<false> | ForumTopicsSelect<true>;
+    forumReplies: ForumRepliesSelect<false> | ForumRepliesSelect<true>;
+    forumReactions: ForumReactionsSelect<false> | ForumReactionsSelect<true>;
+    forumSubscriptions: ForumSubscriptionsSelect<false> | ForumSubscriptionsSelect<true>;
+    forumReports: ForumReportsSelect<false> | ForumReportsSelect<true>;
     contactSubmissions: ContactSubmissionsSelect<false> | ContactSubmissionsSelect<true>;
     newsletterSubscribers: NewsletterSubscribersSelect<false> | NewsletterSubscribersSelect<true>;
+    notifications: NotificationsSelect<false> | NotificationsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    auditLog: AuditLogSelect<false> | AuditLogSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -985,6 +1005,23 @@ export interface Article {
    */
   order?: number | null;
   featured?: boolean | null;
+  /**
+   * Publique : visible de tous et indexable. Connectés : réservée aux comptes, jamais dans le plan du site. Sélectionnés : réservée aux clients désignés ci-dessous.
+   */
+  visibility: 'public' | 'authenticated' | 'private';
+  /**
+   * Seuls ces comptes peuvent ouvrir l’article.
+   */
+  authorizedCustomers?: (string | User)[] | null;
+  /**
+   * Décocher ferme les commentaires sans masquer ceux déjà publiés.
+   */
+  commentsEnabled?: boolean | null;
+  commentsMode?: ('inherit' | 'direct' | 'premoderated') | null;
+  /**
+   * Retire l’article des listes publiques sans le dépublier ni le supprimer.
+   */
+  archived?: boolean | null;
   author?: (string | null) | User;
   publishedAt?: string | null;
   /**
@@ -1792,6 +1829,203 @@ export interface AuthPrototypeBlock {
   blockType: 'authPrototype';
 }
 /**
+ * Commentaires laissés sous les articles publics. Modérables sans supprimer le contenu.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "articleComments".
+ */
+export interface ArticleComment {
+  id: string;
+  article: string | Article;
+  author: string | User;
+  /**
+   * Un seul niveau de réponse est autorisé.
+   */
+  parent?: (string | null) | ArticleComment;
+  /**
+   * Texte brut. Aucun HTML n’est interprété au rendu.
+   */
+  body: string;
+  /**
+   * Généré depuis le message, pour les listes de modération.
+   */
+  excerpt?: string | null;
+  status: 'published' | 'pending' | 'hidden' | 'spam';
+  /**
+   * Renseigné à la première modification. Affiche la mention « modifié ».
+   */
+  editedAt?: string | null;
+  reportCount?: number | null;
+  moderatedBy?: (string | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "articleFavorites".
+ */
+export interface ArticleFavorite {
+  id: string;
+  user: string | User;
+  article: string | Article;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Rubriques du forum public. L’ordre détermine leur affichage.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "forumCategories".
+ */
+export interface ForumCategory {
+  id: string;
+  /**
+   * Identifiant utilisé dans l’URL publique. Généré depuis le titre s’il est laissé vide. Modifier un slug déjà en ligne casse les liens existants.
+   */
+  slug: string;
+  title: string;
+  /**
+   * Affichée sous le nom, dans le fil et en tête de la catégorie.
+   */
+  description?: string | null;
+  /**
+   * Les valeurs les plus faibles apparaissent en premier.
+   */
+  order?: number | null;
+  color?: ('green' | 'acid' | 'earth' | 'slate') | null;
+  /**
+   * Retire la catégorie du fil public sans supprimer ses discussions.
+   */
+  archived?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Discussions publiques. Épingler, verrouiller, résoudre ou masquer sans supprimer.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "forumTopics".
+ */
+export interface ForumTopic {
+  id: string;
+  /**
+   * Identifiant utilisé dans l’URL publique. Généré depuis le titre s’il est laissé vide. Modifier un slug déjà en ligne casse les liens existants.
+   */
+  slug: string;
+  title: string;
+  /**
+   * Texte brut. Aucun HTML n’est interprété au rendu.
+   */
+  body: string;
+  category: string | ForumCategory;
+  tags?:
+    | {
+        label: string;
+        id?: string | null;
+      }[]
+    | null;
+  author: string | User;
+  status: 'published' | 'hidden' | 'archived';
+  /**
+   * Remonte la discussion en tête du fil.
+   */
+  pinned?: boolean | null;
+  /**
+   * Empêche toute nouvelle réponse.
+   */
+  locked?: boolean | null;
+  /**
+   * L’auteur peut marquer sa propre discussion comme résolue.
+   */
+  resolved?: boolean | null;
+  replyCount?: number | null;
+  viewCount?: number | null;
+  reactionCount?: number | null;
+  reportCount?: number | null;
+  lastActivityAt?: string | null;
+  editedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "forumReplies".
+ */
+export interface ForumReply {
+  id: string;
+  topic: string | ForumTopic;
+  /**
+   * Un seul niveau d’imbrication est autorisé.
+   */
+  parent?: (string | null) | ForumReply;
+  author: string | User;
+  /**
+   * Texte brut. Aucun HTML n’est interprété au rendu.
+   */
+  body: string;
+  excerpt?: string | null;
+  status: 'published' | 'hidden' | 'spam';
+  /**
+   * Marquée par l’auteur de la discussion lorsqu’elle résout sa question.
+   */
+  acceptedAnswer?: boolean | null;
+  reactionCount?: number | null;
+  reportCount?: number | null;
+  editedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "forumReactions".
+ */
+export interface ForumReaction {
+  id: string;
+  user: string | User;
+  targetType: 'topic' | 'reply';
+  targetId: string;
+  type: 'helpful' | 'thanks' | 'insightful';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "forumSubscriptions".
+ */
+export interface ForumSubscription {
+  id: string;
+  user: string | User;
+  topic: string | ForumTopic;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * File de modération. Chaque signalement traité est journalisé.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "forumReports".
+ */
+export interface ForumReport {
+  id: string;
+  reporter: string | User;
+  targetType: 'topic' | 'reply' | 'comment';
+  targetId: string;
+  /**
+   * Copié au moment du signalement : reste lisible même si le contenu est modifié.
+   */
+  targetExcerpt?: string | null;
+  reason: 'offensive' | 'spam' | 'off_topic' | 'personal_data' | 'other';
+  detail?: string | null;
+  status: 'open' | 'upheld' | 'dismissed';
+  resolvedBy?: (string | null) | User;
+  /**
+   * Interne. Jamais exposée à la personne signalée ni à l’auteur.
+   */
+  moderatorNote?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Messages reçus via la page Contact. Contenu privé : jamais exposé publiquement.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1833,6 +2067,89 @@ export interface NewsletterSubscriber {
   subscribedAt?: string | null;
   unsubscribedAt?: string | null;
   notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Générées automatiquement. Aucune saisie manuelle n’est prévue.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notifications".
+ */
+export interface Notification {
+  id: string;
+  recipient: string | User;
+  type:
+    | 'message'
+    | 'proposal'
+    | 'proposal_decision'
+    | 'quote_status'
+    | 'document'
+    | 'invoice'
+    | 'invoice_overdue'
+    | 'project_update'
+    | 'appointment_confirmed'
+    | 'appointment_rescheduled'
+    | 'appointment_cancelled'
+    | 'comment_reply'
+    | 'forum_reply'
+    | 'moderation';
+  title: string;
+  body?: string | null;
+  /**
+   * Chemin interne vers la ressource concernée.
+   */
+  link?: string | null;
+  read?: boolean | null;
+  readAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Registre en ajout seul des actions sensibles. Consultable par les super-administrateurs.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "auditLog".
+ */
+export interface AuditLog {
+  id: string;
+  action:
+    | 'user.role_changed'
+    | 'user.suspended'
+    | 'user.reinstated'
+    | 'user.forum_banned'
+    | 'user.forum_unbanned'
+    | 'comment.moderated'
+    | 'comment.deleted'
+    | 'forum.topic_moderated'
+    | 'forum.reply_moderated'
+    | 'forum.report_resolved'
+    | 'document.uploaded'
+    | 'document.deleted'
+    | 'quote.updated'
+    | 'proposal.sent'
+    | 'invoice.issued'
+    | 'invoice.cancelled'
+    | 'appointment.confirmed'
+    | 'appointment.cancelled';
+  /**
+   * Vide lorsque l’action provient d’un script serveur.
+   */
+  actor?: (string | null) | User;
+  /**
+   * Copiée au moment de l’action : l’entrée reste lisible si le compte est supprimé.
+   */
+  actorEmail?: string | null;
+  targetCollection?: string | null;
+  targetId?: string | null;
+  /**
+   * Libellé lisible, figé au moment de l’action.
+   */
+  targetLabel?: string | null;
+  /**
+   * Ce qui a changé. Ne contient jamais de secret ni de contenu de message.
+   */
+  summary?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1977,6 +2294,38 @@ export interface PayloadLockedDocument {
         value: string | Media;
       } | null)
     | ({
+        relationTo: 'articleComments';
+        value: string | ArticleComment;
+      } | null)
+    | ({
+        relationTo: 'articleFavorites';
+        value: string | ArticleFavorite;
+      } | null)
+    | ({
+        relationTo: 'forumCategories';
+        value: string | ForumCategory;
+      } | null)
+    | ({
+        relationTo: 'forumTopics';
+        value: string | ForumTopic;
+      } | null)
+    | ({
+        relationTo: 'forumReplies';
+        value: string | ForumReply;
+      } | null)
+    | ({
+        relationTo: 'forumReactions';
+        value: string | ForumReaction;
+      } | null)
+    | ({
+        relationTo: 'forumSubscriptions';
+        value: string | ForumSubscription;
+      } | null)
+    | ({
+        relationTo: 'forumReports';
+        value: string | ForumReport;
+      } | null)
+    | ({
         relationTo: 'contactSubmissions';
         value: string | ContactSubmission;
       } | null)
@@ -1985,8 +2334,16 @@ export interface PayloadLockedDocument {
         value: string | NewsletterSubscriber;
       } | null)
     | ({
+        relationTo: 'notifications';
+        value: string | Notification;
+      } | null)
+    | ({
         relationTo: 'users';
         value: string | User;
+      } | null)
+    | ({
+        relationTo: 'auditLog';
+        value: string | AuditLog;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -2858,6 +3215,11 @@ export interface ArticlesSelect<T extends boolean = true> {
   slug?: T;
   order?: T;
   featured?: T;
+  visibility?: T;
+  authorizedCustomers?: T;
+  commentsEnabled?: T;
+  commentsMode?: T;
+  archived?: T;
   author?: T;
   publishedAt?: T;
   publishedLabel?: T;
@@ -3050,6 +3412,133 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "articleComments_select".
+ */
+export interface ArticleCommentsSelect<T extends boolean = true> {
+  article?: T;
+  author?: T;
+  parent?: T;
+  body?: T;
+  excerpt?: T;
+  status?: T;
+  editedAt?: T;
+  reportCount?: T;
+  moderatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "articleFavorites_select".
+ */
+export interface ArticleFavoritesSelect<T extends boolean = true> {
+  user?: T;
+  article?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "forumCategories_select".
+ */
+export interface ForumCategoriesSelect<T extends boolean = true> {
+  slug?: T;
+  title?: T;
+  description?: T;
+  order?: T;
+  color?: T;
+  archived?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "forumTopics_select".
+ */
+export interface ForumTopicsSelect<T extends boolean = true> {
+  slug?: T;
+  title?: T;
+  body?: T;
+  category?: T;
+  tags?:
+    | T
+    | {
+        label?: T;
+        id?: T;
+      };
+  author?: T;
+  status?: T;
+  pinned?: T;
+  locked?: T;
+  resolved?: T;
+  replyCount?: T;
+  viewCount?: T;
+  reactionCount?: T;
+  reportCount?: T;
+  lastActivityAt?: T;
+  editedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "forumReplies_select".
+ */
+export interface ForumRepliesSelect<T extends boolean = true> {
+  topic?: T;
+  parent?: T;
+  author?: T;
+  body?: T;
+  excerpt?: T;
+  status?: T;
+  acceptedAnswer?: T;
+  reactionCount?: T;
+  reportCount?: T;
+  editedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "forumReactions_select".
+ */
+export interface ForumReactionsSelect<T extends boolean = true> {
+  user?: T;
+  targetType?: T;
+  targetId?: T;
+  type?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "forumSubscriptions_select".
+ */
+export interface ForumSubscriptionsSelect<T extends boolean = true> {
+  user?: T;
+  topic?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "forumReports_select".
+ */
+export interface ForumReportsSelect<T extends boolean = true> {
+  reporter?: T;
+  targetType?: T;
+  targetId?: T;
+  targetExcerpt?: T;
+  reason?: T;
+  detail?: T;
+  status?: T;
+  resolvedBy?: T;
+  moderatorNote?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "contactSubmissions_select".
  */
 export interface ContactSubmissionsSelect<T extends boolean = true> {
@@ -3078,6 +3567,21 @@ export interface NewsletterSubscribersSelect<T extends boolean = true> {
   subscribedAt?: T;
   unsubscribedAt?: T;
   notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notifications_select".
+ */
+export interface NotificationsSelect<T extends boolean = true> {
+  recipient?: T;
+  type?: T;
+  title?: T;
+  body?: T;
+  link?: T;
+  read?: T;
+  readAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -3129,6 +3633,21 @@ export interface UsersSelect<T extends boolean = true> {
         createdAt?: T;
         expiresAt?: T;
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "auditLog_select".
+ */
+export interface AuditLogSelect<T extends boolean = true> {
+  action?: T;
+  actor?: T;
+  actorEmail?: T;
+  targetCollection?: T;
+  targetId?: T;
+  targetLabel?: T;
+  summary?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

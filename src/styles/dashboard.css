@@ -1,0 +1,210 @@
+/**
+ * Feuille de style des tableaux de bord (espace client et administration).
+ *
+ * IMPORTANT — cette feuille est importée uniquement par les layouts du groupe
+ * `(dashboard)`. Le site public ne la charge jamais : `globals.css` reste sa
+ * seule source de style, strictement inchangée. C'est ce cloisonnement qui
+ * permet d'introduire Tailwind sans toucher au design public existant.
+ *
+ * La palette reprend les jetons du site — encre, papier, vert, acide, Manrope
+ * et Newsreader — pour que les deux univers restent visiblement parents, dans
+ * une tonalité suisse et éditoriale plutôt qu'un tableau de bord générique.
+ */
+
+@import 'tailwindcss';
+
+@source '../components';
+@source '../app';
+
+/* Le thème sombre est piloté par une classe posée sur `<html>`. */
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* --- Jetons repris du site public ------------------------------------ */
+  --ink: #101716;
+  --muted-ink: #65706c;
+  --paper: #f4f2ea;
+  --paper-deep: #e9e5da;
+  --white: #fffefa;
+  --green: #173f35;
+  --green-light: #24594b;
+  --acid: #c9f06d;
+
+  --font-sans: 'Manrope', 'DM Sans', Arial, sans-serif;
+  --font-serif: 'Newsreader', Georgia, serif;
+
+  /* --- Jetons attendus par shadcn/ui ------------------------------------ */
+  --radius: 0.5rem;
+
+  --background: var(--paper);
+  --foreground: var(--ink);
+
+  --card: var(--white);
+  --card-foreground: var(--ink);
+
+  --popover: var(--white);
+  --popover-foreground: var(--ink);
+
+  --primary: var(--green);
+  --primary-foreground: #f4f2ea;
+
+  --secondary: var(--paper-deep);
+  --secondary-foreground: var(--ink);
+
+  --muted: var(--paper-deep);
+  --muted-foreground: var(--muted-ink);
+
+  --accent: var(--acid);
+  --accent-foreground: var(--ink);
+
+  --destructive: #a3231b;
+  --destructive-foreground: #fffefa;
+
+  --border: rgba(16, 23, 22, 0.17);
+  --input: rgba(16, 23, 22, 0.17);
+  --ring: var(--green-light);
+
+  /* Barre latérale : encre profonde, pour ancrer la navigation. */
+  --sidebar: var(--green);
+  --sidebar-foreground: #e7ece9;
+  --sidebar-primary: var(--acid);
+  --sidebar-primary-foreground: var(--ink);
+  --sidebar-accent: rgba(255, 255, 255, 0.09);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.14);
+  --sidebar-ring: var(--acid);
+
+  /* Séries graphiques, accessibles en clair comme en sombre. */
+  --chart-1: #24594b;
+  --chart-2: #8fae4f;
+  --chart-3: #b5763a;
+  --chart-4: #4a6d8c;
+  --chart-5: #8a5a7a;
+}
+
+.dark {
+  --background: #0d1211;
+  --foreground: #e9e5da;
+
+  --card: #151d1b;
+  --card-foreground: #e9e5da;
+
+  --popover: #151d1b;
+  --popover-foreground: #e9e5da;
+
+  --primary: var(--acid);
+  --primary-foreground: #101716;
+
+  --secondary: #1d2725;
+  --secondary-foreground: #e9e5da;
+
+  --muted: #1d2725;
+  --muted-foreground: #9aa8a3;
+
+  --accent: #24594b;
+  --accent-foreground: #f4f2ea;
+
+  --destructive: #e0655c;
+  --destructive-foreground: #101716;
+
+  --border: rgba(233, 229, 218, 0.16);
+  --input: rgba(233, 229, 218, 0.16);
+  --ring: var(--acid);
+
+  --sidebar: #0a0f0e;
+  --sidebar-foreground: #d8e0dc;
+  --sidebar-primary: var(--acid);
+  --sidebar-primary-foreground: #101716;
+  --sidebar-accent: rgba(255, 255, 255, 0.07);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-ring: var(--acid);
+
+  --chart-1: #7fd8bd;
+  --chart-2: #c9f06d;
+  --chart-3: #e0a86a;
+  --chart-4: #8ab6dc;
+  --chart-5: #d09ac0;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
+
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 2px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/40;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Titres éditoriaux : même resserrement optique que le site public. */
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.03em;
+  }
+
+  h1 em,
+  h2 em,
+  h3 em {
+    font-family: var(--font-serif);
+    font-weight: 400;
+  }
+
+  /* Respecte un réglage système de réduction des animations. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

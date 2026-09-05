@@ -27,6 +27,22 @@ const nextConfig = {
       ? [{ protocol: 'https', hostname: s3Host }, { protocol: 'https', hostname: `*.${s3Host}` }]
       : [],
   },
+  /**
+   * Le panneau Payload a été déplacé de `/admin` vers `/cms`, `/admin` étant
+   * désormais le tableau de bord d'administration du site.
+   *
+   * Seuls les chemins profonds hérités sont redirigés : `/admin` lui-même ne
+   * peut pas l'être, sinon le nouveau tableau de bord serait inatteignable.
+   */
+  async redirects() {
+    const legacy = ['collections', 'globals', 'login', 'logout', 'account', 'forgot', 'reset', 'unauthorized', 'create-first-user', 'browse-by-folder']
+    return legacy.map((segment) => ({
+      source: `/admin/${segment}/:path*`,
+      destination: `/cms/${segment}/:path*`,
+      permanent: false,
+    }))
+  },
+
   // Payload et ses dépendances natives ne doivent pas être bundlées côté serveur.
   serverExternalPackages: ['mongoose', 'sharp'],
 }

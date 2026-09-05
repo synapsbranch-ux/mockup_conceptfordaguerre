@@ -121,7 +121,13 @@ const fetchArticles = async (draft: boolean): Promise<Article[]> => {
     pagination: false,
     depth: 2,
     sort: 'order',
+    // Un article archivé sort des listes publiques sans être dépublié.
+    where: { archived: { not_equals: true } },
     draft,
+    // Hors mode brouillon, les règles d'accès s'appliquent : sans session,
+    // `articleReadAccess` restreint à « publié ET visibilité publique ».
+    // Les articles réservés ne peuvent donc pas atteindre le plan du site
+    // ni les listes publiques.
     overrideAccess: draft,
   })
   return docs
