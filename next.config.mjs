@@ -64,7 +64,11 @@ const nextConfig = {
   // Payload et ses dépendances natives ne doivent pas être bundlées côté serveur.
   // `pdfkit` charge ses metriques de police (.afm) depuis le disque a
   // l'execution : bundle par Next, il ne les retrouverait plus.
-  serverExternalPackages: ['mongoose', 'sharp', 'pdfkit'],
+  // `mongodb` est le pilote de l'adaptateur Better Auth, au meme titre que
+  // `mongoose` l'est pour Payload. Non declare externe, il est bundle : le
+  // module d'authentification echoue alors a se charger en production, et
+  // `/api/auth/*` retombe sur le catch-all Payload qui repond 404.
+  serverExternalPackages: ['mongoose', 'mongodb', 'sharp', 'pdfkit'],
 }
 
 export default withPayload(nextConfig, { devBundleServerPackages: false })
