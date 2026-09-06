@@ -44,7 +44,7 @@ Les clés sont décrites dans [.env.example](.env.example). Les indispensables :
 | `DATABASE_URI` | URI MongoDB complète, **base incluse**. Railway et Atlas exigent `?authSource=admin`. |
 | `PAYLOAD_SECRET` | Clé de chiffrement Payload. `openssl rand -hex 32`. |
 | `PREVIEW_SECRET` | Protège les liens de prévisualisation et la route de revalidation. `openssl rand -hex 24`. |
-| `NEXT_PUBLIC_SERVER_URL` | Origine publique, sans slash final. Sert aux URLs canoniques, à Open Graph, au CORS. |
+| `NEXT_PUBLIC_SERVER_URL` | Origine publique — protocole + domaine, sans chemin ni slash final. Sert aux URLs canoniques, à Open Graph, au CORS et au `basePath` de Better Auth. Une valeur mal formée (`https://https://…`) fait échouer le démarrage. |
 | `MEDIA_STORAGE_DRIVER` | `gridfs` ou `s3`. |
 | `REDIS_URL` | Optionnel. Limitation de débit partagée entre instances. |
 

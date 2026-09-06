@@ -48,8 +48,50 @@ const s3 =
       }
     : null
 
-/** Retire un éventuel slash final pour éviter les doubles slashs dans les URLs canoniques. */
-const normalizeURL = (value: string): string => value.replace(/\/+$/, '')
+/**
+ * Normalise et valide une origine publique : protocole obligatoire, hôte seul,
+ * sans chemin ni slash final — afin d'éviter les doubles slashs dans les URLs
+ * canoniques.
+ *
+ * La validation n'est pas cosmétique. Un schéma dupliqué
+ * (`https://https://exemple.fr`) reste accepté par `new URL()` : l'hôte devient
+ * « https » et le vrai domaine se retrouve dans le *chemin*. Le site continue
+ * alors de répondre, mais Better Auth déduit son `basePath` du chemin de
+ * `baseURL` : plus rien ne correspond à `/api/auth/*`, qui répond 404 avec un
+ * corps vide — connexion et inscription deviennent impossibles sans la moindre
+ * trace dans les journaux. L'échec doit donc survenir au démarrage, avec un
+ * message explicite, plutôt que se transformer en panne silencieuse.
+ */
+export const normalizePublicOrigin = (value: string, name: string): string => {
+  const invalid = (reason: string): never => {
+    throw new Error(
+      `Variable d'environnement invalide : ${name} = « ${value} » — ${reason}. ` +
+        'Attendu : une origine seule, par exemple https://exemple.fr',
+    )
+  }
+
+  let url: URL
+  try {
+    url = new URL(value)
+  } catch {
+    return invalid("ce n'est pas une URL absolue")
+  }
+
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+    return invalid('le protocole doit être http:// ou https://')
+  }
+
+  // Attrape le schéma dupliqué, dont le domaine réel atterrit dans le chemin.
+  if (url.pathname.replace(/\/+$/, '') !== '') {
+    return invalid("une origine ne comporte pas de chemin (schéma dupliqué ?)")
+  }
+
+  if (url.search !== '' || url.hash !== '') {
+    return invalid('une origine ne comporte ni paramètres ni ancre')
+  }
+
+  return url.origin
+}
 
 /**
  * Fournisseur Google.
@@ -72,7 +114,10 @@ export const env = {
   databaseURI: require_('DATABASE_URI', ['MONGODB_URI']),
   payloadSecret: require_('PAYLOAD_SECRET'),
   previewSecret: require_('PREVIEW_SECRET'),
-  serverURL: normalizeURL(require_('NEXT_PUBLIC_SERVER_URL', ['NEXT_PUBLIC_SITE_URL'])),
+  serverURL: normalizePublicOrigin(
+    require_('NEXT_PUBLIC_SERVER_URL', ['NEXT_PUBLIC_SITE_URL']),
+    'NEXT_PUBLIC_SERVER_URL',
+  ),
   mediaDriver,
   s3,
   redisURL: read('REDIS_URL'),
@@ -95,5 +140,8 @@ export const env = {
  * Volontairement restreint : seule l'origine publique déclarée est acceptée.
  */
 export const trustedOrigins = Array.from(
-  new Set([env.serverURL, normalizeURL(read('NEXT_PUBLIC_SITE_URL') ?? env.serverURL)]),
+  new Set([
+    env.serverURL,
+    normalizePublicOrigin(read('NEXT_PUBLIC_SITE_URL') ?? env.serverURL, 'NEXT_PUBLIC_SITE_URL'),
+  ]),
 )
