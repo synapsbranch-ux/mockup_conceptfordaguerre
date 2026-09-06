@@ -20,7 +20,13 @@ export const mediaStoragePlugin = (): Plugin => {
     }
 
     return s3Storage({
-      collections: { media: true },
+      collections: {
+        media: true,
+        // Les documents prives passent par le meme pilote, mais leur acces
+        // reste filtre par le controle d'acces Payload : aucune URL publique
+        // permanente n'est generee pour eux.
+        documents: true,
+      },
       bucket: s3.bucket,
       config: {
         region: s3.region,
@@ -37,6 +43,22 @@ export const mediaStoragePlugin = (): Plugin => {
   return cloudStoragePlugin({
     collections: {
       media: {
+        adapter: gridfsAdapter(),
+        disableLocalStorage: true,
+      },
+      /**
+       * Documents prives.
+       *
+       * `disablePayloadAccessControl` reste NON active : Payload applique donc
+       * la regle `read` de la collection a chaque requete de fichier. Un
+       * document reserve a d'autres clients renvoie 404 meme si son nom de
+       * fichier est devine.
+       *
+       * Le telechargement passe malgre tout par
+       * `/api/documents/[id]/telecharger`, qui ajoute l'en-tete de piece
+       * jointe et consigne l'historique.
+       */
+      documents: {
         adapter: gridfsAdapter(),
         disableLocalStorage: true,
       },
