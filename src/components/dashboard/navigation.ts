@@ -3,13 +3,27 @@ import {
   Bell,
   Bookmark,
   Building2,
+  CalendarClock,
+  CalendarRange,
+  FileSignature,
+  FileStack,
   FileText,
   Gauge,
+  Inbox,
+  Layers,
   LayoutDashboard,
+  Mail,
+  MessageSquare,
   MessagesSquare,
   Newspaper,
+  ReceiptText,
+  ScrollText,
+  Send,
+  Settings,
   ShieldAlert,
   Tags,
+  Users,
+  Wallet,
 } from 'lucide-react'
 
 /**
@@ -118,8 +132,57 @@ export const ADMIN_NAV: NavGroup[] = [
     ],
   },
   {
+    label: 'Commercial',
+    items: [
+      { title: 'Demandes de devis', href: '/admin/devis', icon: ScrollText, badge: 'quotesToProcess' },
+      {
+        title: 'Propositions',
+        href: '/admin/propositions',
+        icon: FileSignature,
+        badge: 'proposalsAwaitingDecision',
+      },
+      { title: 'Factures', href: '/admin/factures', icon: ReceiptText, badge: 'unpaidInvoices' },
+      { title: 'Paiements', href: '/admin/paiements', icon: Wallet },
+      { title: 'Projets clients', href: '/admin/projets', icon: Building2 },
+      { title: 'Services', href: '/admin/services', icon: Layers },
+    ],
+  },
+  {
+    label: 'Relation client',
+    items: [
+      { title: 'Clients et comptes', href: '/admin/clients', icon: Users },
+      {
+        title: 'Conversations',
+        href: '/admin/conversations',
+        icon: MessageSquare,
+        badge: 'adminUnreadConversations',
+      },
+      { title: 'Messages de contact', href: '/admin/contact', icon: Inbox, badge: 'newContactMessages' },
+      {
+        title: 'Rendez-vous',
+        href: '/admin/rendez-vous',
+        icon: CalendarClock,
+        badge: 'appointmentsToConfirm',
+      },
+      { title: 'Disponibilités', href: '/admin/disponibilites', icon: CalendarRange },
+      { title: 'Documents', href: '/admin/documents', icon: FileStack },
+    ],
+  },
+  {
+    label: 'Diffusion',
+    items: [
+      { title: 'Articles', href: '/admin/articles', icon: Newspaper },
+      { title: 'Abonnés', href: '/admin/infolettre/abonnes', icon: Mail },
+      { title: 'Campagnes', href: '/admin/infolettre/campagnes', icon: Send },
+    ],
+  },
+  {
     label: 'Système',
-    items: [{ title: 'Pages et médias (CMS)', href: '/cms', icon: FileText }],
+    items: [
+      { title: 'Pages et médias (CMS)', href: '/cms', icon: FileText },
+      { title: 'Journal d’activité', href: '/admin/journal', icon: ScrollText },
+      { title: 'Paramètres', href: '/admin/parametres', icon: Settings },
+    ],
   },
 ]
 
