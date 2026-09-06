@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { getHeader } from '@/lib/payload'
 import { resolveHref } from '@/lib/links'
 
+import { AuthLink } from './AuthLink'
 import { MainNav, type NavItem } from './MainNav'
 import { Arrow } from './primitives'
 
@@ -38,11 +39,15 @@ export const Header = async () => {
           toggleLabel={header.mobile?.toggleLabel}
           closeLabel={header.mobile?.closeLabel}
         />
-        {ctaHref && header.cta?.link?.label && (
-          <Link className="header-cta" href={ctaHref}>
-            {header.cta.link.label} <Arrow />
-          </Link>
-        )}
+        <div className="header-actions">
+          {/* Acces au compte : toujours present, independamment du CMS. */}
+          <AuthLink />
+          {ctaHref && header.cta?.link?.label && (
+            <Link className="header-cta" href={ctaHref}>
+              {header.cta.link.label} <Arrow />
+            </Link>
+          )}
+        </div>
       </header>
     </>
   )

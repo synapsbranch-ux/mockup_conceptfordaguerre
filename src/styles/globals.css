@@ -56,7 +56,9 @@ em { font-family: var(--serif); font-weight: 400; }
 .main-nav a { font-size: 12px; font-weight: 600; position: relative; }
 .main-nav a::after { content: ''; height: 1px; position: absolute; left: 0; right: 100%; bottom: -8px; background: currentColor; transition: right .2s; }
 .main-nav a:hover::after, .main-nav a.active::after { right: 0; }
-.header-cta { justify-self: end; font-size: 12px; font-weight: 700; text-transform: uppercase; display: flex; gap: 9px; align-items: center; }
+.header-actions { justify-self: end; display: flex; gap: 20px; align-items: center; }
+.header-auth { font-size: 12px; font-weight: 700; text-transform: uppercase; white-space: nowrap; }
+.header-cta { font-size: 12px; font-weight: 700; text-transform: uppercase; display: flex; gap: 9px; align-items: center; white-space: nowrap; }
 .menu-toggle { display: none; }
 
 /* Home hero */
@@ -389,7 +391,9 @@ em { font-family: var(--serif); font-weight: 400; }
   .site-header { height: 76px; padding-inline: 18px; display: flex; justify-content: space-between; }
   .brand-mark { width: 38px; height: 38px; }
   .brand-name { display: none; }
-  .header-cta { margin-left: auto; margin-right: 25px; }
+  .header-actions { margin-left: auto; margin-right: 25px; gap: 14px; }
+  /* Sur petit ecran, le CTA editorial s'efface : l'acces au compte prime. */
+  .header-cta { display: none; }
   .menu-toggle { display: flex; width: 36px; height: 36px; border: 0; background: transparent; flex-direction: column; justify-content: center; gap: 7px; padding: 7px; color: inherit; }
   .menu-toggle span { height: 1px; width: 100%; background: currentColor; }
   .main-nav { position: fixed; inset: 76px 0 auto; background: var(--paper); color: var(--ink); padding: 35px 25px; display: none; flex-direction: column; align-items: flex-start; box-shadow: 0 30px 50px rgba(0,0,0,.13); }

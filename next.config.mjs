@@ -36,11 +36,29 @@ const nextConfig = {
    */
   async redirects() {
     const legacy = ['collections', 'globals', 'login', 'logout', 'account', 'forgot', 'reset', 'unauthorized', 'create-first-user', 'browse-by-folder']
-    return legacy.map((segment) => ({
-      source: `/admin/${segment}/:path*`,
-      destination: `/cms/${segment}/:path*`,
-      permanent: false,
-    }))
+
+    return [
+      ...legacy.map((segment) => ({
+        source: `/admin/${segment}/:path*`,
+        destination: `/cms/${segment}/:path*`,
+        permanent: false,
+      })),
+
+      /**
+       * `/space` était la maquette d'espace utilisateur, antérieure au portail.
+       * Le bouton « Espace » de l'en-tête, administré depuis le CMS, y pointe
+       * toujours : le rediriger ici évite d'avoir à modifier le contenu du
+       * client, et fait aboutir le lien sur le véritable espace.
+       *
+       * Une personne non connectée est ensuite orientée par `proxy.ts` vers
+       * `/connexion?next=/espace-client`, donc le parcours se termine bien sur
+       * la connexion ou la création de compte.
+       *
+       * Redirection temporaire : la page pourra reprendre un autre rôle.
+       */
+      { source: '/space', destination: '/espace-client', permanent: false },
+      { source: '/en/space', destination: '/espace-client', permanent: false },
+    ]
   },
 
   // Payload et ses dépendances natives ne doivent pas être bundlées côté serveur.
