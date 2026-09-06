@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { alternatesFor, type Locale } from '@/lib/i18n'
 
 import { mediaUrl } from '@/components/media/CMSImage'
 import { env } from '@/lib/env'
@@ -28,6 +29,8 @@ type BuildArgs = {
   /** Dates ISO, exposees par Open Graph pour les articles. */
   publishedTime?: string | null
   modifiedTime?: string | null
+  /** Langue de la page. Determine la canonique et `og:locale`. */
+  locale?: Locale
 }
 
 const absolute = (url: string | null): string | null =>
@@ -46,6 +49,7 @@ export const buildMetadata = async ({
   type = 'website',
   publishedTime,
   modifiedTime,
+  locale = 'fr',
 }: BuildArgs): Promise<Metadata> => {
   const settings = await getSiteSettings()
 
@@ -77,11 +81,13 @@ export const buildMetadata = async ({
     // et dans les resultats de recherche.
     title: composed ? { absolute: composed } : undefined,
     description,
-    alternates: { canonical },
+    // Chaque version est canonique d'elle-meme et declare l'autre par
+    // `hreflang` : c'est ce qui apparie les deux langues aux yeux des moteurs.
+    alternates: alternatesFor(path, env.serverURL, locale),
     robots: seo?.noIndex ? { index: false, follow: false } : undefined,
     openGraph: {
       type,
-      locale: 'fr_CA',
+      locale: locale === 'en' ? 'en_CA' : 'fr_CA',
       ...(type === 'article'
         ? {
             publishedTime: publishedTime ?? undefined,

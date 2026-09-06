@@ -89,6 +89,27 @@ export default buildConfig({
     },
   },
 
+  /**
+   * Bilinguisme du CONTENU.
+   *
+   * Le français est la langue de référence ; l'anglais est optionnel et
+   * retombe sur le français (`fallback: true`) plutôt que d'afficher un champ
+   * vide.
+   *
+   * Important : aucun champ existant n'est marqué `localized`. Payload ne
+   * restructure donc AUCUNE donnée déjà en base — seuls les champs
+   * explicitement marqués sont stockés par locale. Activer la localisation est
+   * ici sans effet sur les documents existants.
+   */
+  localization: {
+    locales: [
+      { label: 'Français', code: 'fr' },
+      { label: 'English', code: 'en' },
+    ],
+    defaultLocale: 'fr',
+    fallback: true,
+  },
+
   // Interface, libellés de collections et messages de validation en français.
   i18n: {
     supportedLanguages: { fr },

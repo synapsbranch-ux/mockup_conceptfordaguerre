@@ -6,6 +6,8 @@ import { draftMode } from 'next/headers'
 import { getPayload } from 'payload'
 import type { Payload } from 'payload'
 
+import { DEFAULT_LOCALE } from '@/lib/i18n'
+import type { Locale } from '@/lib/i18n'
 import type { Article, Commitment, Page, Project, Service } from '@/payload-types'
 
 export const getPayloadClient = async (): Promise<Payload> => getPayload({ config })
@@ -39,7 +41,7 @@ const withCache = <T>(
 
 // --- Pages -------------------------------------------------------------------
 
-const fetchPage = async (slug: string, draft: boolean): Promise<Page | null> => {
+const fetchPage = async (slug: string, draft: boolean, locale: Locale): Promise<Page | null> => {
   const payload = await getPayloadClient()
   const { docs } = await payload.find({
     collection: 'pages',
@@ -48,14 +50,24 @@ const fetchPage = async (slug: string, draft: boolean): Promise<Page | null> => 
     depth: 3,
     draft,
     overrideAccess: draft,
+    // `fallbackLocale` ramene le francais quand un champ n'est pas traduit :
+    // une page anglaise incomplete affiche le contenu francais plutot qu'un
+    // champ vide.
+    locale,
+    fallbackLocale: DEFAULT_LOCALE,
   })
   return docs[0] ?? null
 }
 
-export const getPage = async (slug: string): Promise<Page | null> => {
+export const getPage = async (
+  slug: string,
+  locale: Locale = DEFAULT_LOCALE,
+): Promise<Page | null> => {
   const draft = await isDraftEnabled()
-  if (draft) return fetchPage(slug, true)
-  return withCache(() => fetchPage(slug, false), ['page', slug], ['pages'])()
+  if (draft) return fetchPage(slug, true, locale)
+  // La locale entre dans la cle de cache : sans cela, la premiere langue
+  // demandee serait servie a toutes les autres.
+  return withCache(() => fetchPage(slug, false, locale), ['page', slug, locale], ['pages'])()
 }
 
 export const getPageSlugs = async (): Promise<string[]> => {
@@ -92,7 +104,11 @@ export const getProjects = async (): Promise<Project[]> => {
   return withCache(() => fetchProjects(false), ['projects'], ['projects'])()
 }
 
-const fetchProject = async (slug: string, draft: boolean): Promise<Project | null> => {
+const fetchProject = async (
+  slug: string,
+  draft: boolean,
+  locale: Locale,
+): Promise<Project | null> => {
   const payload = await getPayloadClient()
   const { docs } = await payload.find({
     collection: 'projects',
@@ -101,14 +117,23 @@ const fetchProject = async (slug: string, draft: boolean): Promise<Project | nul
     depth: 3,
     draft,
     overrideAccess: draft,
+    locale,
+    fallbackLocale: DEFAULT_LOCALE,
   })
   return docs[0] ?? null
 }
 
-export const getProject = async (slug: string): Promise<Project | null> => {
+export const getProject = async (
+  slug: string,
+  locale: Locale = DEFAULT_LOCALE,
+): Promise<Project | null> => {
   const draft = await isDraftEnabled()
-  if (draft) return fetchProject(slug, true)
-  return withCache(() => fetchProject(slug, false), ['project', slug], ['projects'])()
+  if (draft) return fetchProject(slug, true, locale)
+  return withCache(
+    () => fetchProject(slug, false, locale),
+    ['project', slug, locale],
+    ['projects'],
+  )()
 }
 
 // --- Articles ----------------------------------------------------------------
@@ -139,7 +164,11 @@ export const getArticles = async (): Promise<Article[]> => {
   return withCache(() => fetchArticles(false), ['articles'], ['articles'])()
 }
 
-const fetchArticle = async (slug: string, draft: boolean): Promise<Article | null> => {
+const fetchArticle = async (
+  slug: string,
+  draft: boolean,
+  locale: Locale,
+): Promise<Article | null> => {
   const payload = await getPayloadClient()
   const { docs } = await payload.find({
     collection: 'articles',
@@ -148,14 +177,23 @@ const fetchArticle = async (slug: string, draft: boolean): Promise<Article | nul
     depth: 3,
     draft,
     overrideAccess: draft,
+    locale,
+    fallbackLocale: DEFAULT_LOCALE,
   })
   return docs[0] ?? null
 }
 
-export const getArticle = async (slug: string): Promise<Article | null> => {
+export const getArticle = async (
+  slug: string,
+  locale: Locale = DEFAULT_LOCALE,
+): Promise<Article | null> => {
   const draft = await isDraftEnabled()
-  if (draft) return fetchArticle(slug, true)
-  return withCache(() => fetchArticle(slug, false), ['article', slug], ['articles'])()
+  if (draft) return fetchArticle(slug, true, locale)
+  return withCache(
+    () => fetchArticle(slug, false, locale),
+    ['article', slug, locale],
+    ['articles'],
+  )()
 }
 
 // --- Services et engagements --------------------------------------------------

@@ -152,7 +152,7 @@ export interface Config {
   db: {
     defaultIDType: string;
   };
-  fallbackLocale: null;
+  fallbackLocale: ('false' | 'none' | 'null') | false | null | ('fr' | 'en') | ('fr' | 'en')[];
   globals: {
     siteSettings: SiteSetting;
     header: Header;
@@ -169,7 +169,7 @@ export interface Config {
     clientSpaceSettings: ClientSpaceSettingsSelect<false> | ClientSpaceSettingsSelect<true>;
     billingSettings: BillingSettingsSelect<false> | BillingSettingsSelect<true>;
   };
-  locale: null;
+  locale: 'fr' | 'en';
   widgets: {
     collections: CollectionsWidget;
   };
