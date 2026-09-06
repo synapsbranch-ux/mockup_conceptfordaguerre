@@ -434,13 +434,6 @@ export const pageFixtures: PageFixture[] = [
         ],
         link: pageLink('Démarrer une conversation', 'contact'),
       },
-      {
-        blockType: 'noticeNote',
-        blockName: 'Mention administrative',
-        visible: true,
-        variant: 'prototype-note',
-        text: 'Raison sociale officielle et détails administratifs de Datakle à confirmer avant la mise en production.',
-      },
     ],
   },
 
@@ -623,7 +616,7 @@ export const pageFixtures: PageFixture[] = [
         ],
         paragraphs: [
           {
-            text: 'Ateliers, contenus pédagogiques, mentorat et collaborations : cette section accueillera les initiatives réalisées et celles à venir.',
+            text: 'Ateliers, contenus pédagogiques, mentorat et collaborations menés auprès des organisations et des étudiants.',
           },
         ],
         showLink: false,
@@ -719,48 +712,6 @@ export const pageFixtures: PageFixture[] = [
     ],
   },
 
-  // ── Espace utilisateur ────────────────────────────────────────────────────
-  {
-    slug: 'space',
-    name: 'Espace utilisateur',
-    title: 'Espace utilisateur | Jacques-Daguerre Valcy',
-    template: 'user-space',
-    seo: {
-      title: 'Espace utilisateur | Jacques-Daguerre Valcy',
-      description:
-        'Espace personnel pour retrouver vos articles enregistrés et gérer votre abonnement à l’infolettre.',
-      // Maquette sans contenu indexable : exclue des moteurs de recherche.
-      noIndex: true,
-    },
-    layout: [
-      {
-        blockType: 'authPrototype',
-        blockName: 'Maquette d’espace utilisateur',
-        visible: true,
-        eyebrow: 'Espace utilisateur',
-        title: [seg('Votre veille data,'), seg('au même endroit.', { em: true, br: true })],
-        description:
-          'Enregistrez vos articles, accédez aux contenus réservés et gérez votre abonnement à la newsletter.',
-        benefits: [
-          { label: '01 · Articles favoris' },
-          { label: '02 · Contenus réservés' },
-          { label: '03 · Préférences newsletter' },
-        ],
-        tabs: { login: 'Connexion', register: 'Créer un compte' },
-        fields: {
-          name: 'Nom',
-          namePlaceholder: 'Votre nom',
-          email: 'Courriel',
-          emailPlaceholder: 'vous@courriel.com',
-          password: 'Mot de passe',
-          passwordPlaceholder: '••••••••',
-          consent: 'J’accepte les conditions et la politique de confidentialité.',
-        },
-        buttons: { login: 'Se connecter', register: 'Créer mon compte' },
-        caption: 'Interface de démonstration — authentification à connecter.',
-      },
-    ],
-  },
 ]
 
 /** Référence conservée pour le lien courriel du pied de page. */

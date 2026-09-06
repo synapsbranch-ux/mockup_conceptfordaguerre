@@ -270,7 +270,6 @@ export interface Page {
         | ContactFormBlock
         | NewsletterFormBlock
         | LegalContentBlock
-        | AuthPrototypeBlock
         | NoticeNoteBlock
         | SpacerBlock
       )[]
@@ -1405,9 +1404,9 @@ export interface NoticeNoteBlock {
   /**
    * Traitement visuel appliqué à la section.
    */
-  variant?: ('about-note' | 'prototype-note' | 'legal-warning' | 'draft-note' | 'caption') | null;
+  variant?: ('about-note' | 'footnote' | 'legal-warning' | 'caption') | null;
   /**
-   * Affichée uniquement par la variante « à compléter ».
+   * Affichée uniquement par la variante « encart mis en avant ».
    */
   label?: string | null;
   text: string;
@@ -1827,60 +1826,6 @@ export interface LegalContentBlock {
   id?: string | null;
   blockName?: string | null;
   blockType: 'legalContent';
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "AuthPrototypeBlock".
- */
-export interface AuthPrototypeBlock {
-  /**
-   * Décocher masque la section sans la supprimer ni perdre son contenu.
-   */
-  visible?: boolean | null;
-  eyebrow?: string | null;
-  /**
-   * Le titre est découpé en segments. Les segments d’une même ligne sont assemblés automatiquement avec une espace.
-   */
-  title: {
-    text: string;
-    emphasized?: boolean | null;
-    /**
-     * Sans effet sur le premier segment.
-     */
-    newLine?: boolean | null;
-    id?: string | null;
-  }[];
-  description?: string | null;
-  benefits?:
-    | {
-        label: string;
-        id?: string | null;
-      }[]
-    | null;
-  tabs: {
-    login: string;
-    register: string;
-  };
-  fields?: {
-    name?: string | null;
-    namePlaceholder?: string | null;
-    email?: string | null;
-    emailPlaceholder?: string | null;
-    password?: string | null;
-    passwordPlaceholder?: string | null;
-    consent?: string | null;
-  };
-  buttons: {
-    login: string;
-    register: string;
-  };
-  /**
-   * Signale que l’authentification n’est pas encore branchée.
-   */
-  caption?: string | null;
-  id?: string | null;
-  blockName?: string | null;
-  blockType: 'authPrototype';
 }
 /**
  * Commentaires laissés sous les articles publics. Modérables sans supprimer le contenu.
@@ -3081,7 +3026,6 @@ export interface PagesSelect<T extends boolean = true> {
         contactForm?: T | ContactFormBlockSelect<T>;
         newsletterForm?: T | NewsletterFormBlockSelect<T>;
         legalContent?: T | LegalContentBlockSelect<T>;
-        authPrototype?: T | AuthPrototypeBlockSelect<T>;
         noticeNote?: T | NoticeNoteBlockSelect<T>;
         spacer?: T | SpacerBlockSelect<T>;
       };
@@ -3738,55 +3682,6 @@ export interface LegalContentBlockSelect<T extends boolean = true> {
         id?: T;
       };
   lastUpdated?: T;
-  id?: T;
-  blockName?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "AuthPrototypeBlock_select".
- */
-export interface AuthPrototypeBlockSelect<T extends boolean = true> {
-  visible?: T;
-  eyebrow?: T;
-  title?:
-    | T
-    | {
-        text?: T;
-        emphasized?: T;
-        newLine?: T;
-        id?: T;
-      };
-  description?: T;
-  benefits?:
-    | T
-    | {
-        label?: T;
-        id?: T;
-      };
-  tabs?:
-    | T
-    | {
-        login?: T;
-        register?: T;
-      };
-  fields?:
-    | T
-    | {
-        name?: T;
-        namePlaceholder?: T;
-        email?: T;
-        emailPlaceholder?: T;
-        password?: T;
-        passwordPlaceholder?: T;
-        consent?: T;
-      };
-  buttons?:
-    | T
-    | {
-        login?: T;
-        register?: T;
-      };
-  caption?: T;
   id?: T;
   blockName?: T;
 }

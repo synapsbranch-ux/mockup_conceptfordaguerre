@@ -166,8 +166,7 @@ export const Quote = ({ block }: { block: QuoteBlock }) => {
 
 /**
  * Encart d'information.
- * Chaque variante correspond à une mention provisoire du prototype, désormais
- * éditable dans le CMS plutôt que figée dans le code.
+ * Chaque variante a son propre traitement visuel ; le texte vient du CMS.
  */
 export const NoticeNote = ({ block }: { block: NoticeNoteBlock }) => {
   switch (block.variant) {
@@ -182,13 +181,11 @@ export const NoticeNote = ({ block }: { block: NoticeNoteBlock }) => {
       )
     case 'legal-warning':
       return <div className="legal-warning">{block.text}</div>
-    case 'draft-note':
-      return <div className="article-draft-note">{block.text}</div>
     case 'caption':
-      return <p className="prototype-caption">{block.text}</p>
-    case 'prototype-note':
+      return <p className="note-caption">{block.text}</p>
+    case 'footnote':
     default:
-      return <div className="prototype-note shell">{block.text}</div>
+      return <div className="footnote shell">{block.text}</div>
   }
 }
 

@@ -57,26 +57,46 @@ export const reserveInvoiceNumber = async (): Promise<string> => {
   const start = Math.max(1, settings.invoiceNextNumber ?? 1)
 
   const db = getAuthDb()
+  const globals = db.collection('globals')
 
-  // Les globals Payload vivent tous dans `globals`, distingués par `globalType`.
-  const before = await db.collection('globals').findOneAndUpdate(
+  /**
+   * Étape 1 — garantir que le compteur existe.
+   *
+   * `$setOnInsert` n'écrit qu'à la création : un compteur déjà en place n'est
+   * jamais remis à sa valeur de départ. L'index unique sur `globalType`
+   * (`npm run db:ensure-indexes`) fait qu'une seule insertion peut aboutir ;
+   * les autres échouent en doublon, ce qui est sans conséquence puisque le
+   * document existe alors.
+   *
+   * Cette étape ne consomme aucun numéro : elle prépare seulement le terrain
+   * pour l'incrément atomique qui suit.
+   */
+  await globals
+    .updateOne(
+      { globalType: 'billingSettings' },
+      { $setOnInsert: { globalType: 'billingSettings', invoiceNextNumber: start } },
+      { upsert: true },
+    )
+    .catch((error: { code?: number }) => {
+      // 11000 : une insertion concurrente a gagné. Le document existe, c'est
+      // tout ce qui compte.
+      if (error?.code !== 11000) throw error
+    })
+
+  /**
+   * Étape 2 — consommer un numéro.
+   *
+   * `$inc` est atomique au niveau du document et le document existe désormais
+   * à coup sûr : deux appels simultanés obtiennent nécessairement deux valeurs
+   * distinctes. Il n'y a plus de branche de repli où deux appelants pourraient
+   * lire la même valeur.
+   */
+  const before = await globals.findOneAndUpdate(
     { globalType: 'billingSettings' },
-    [
-      {
-        $set: {
-          globalType: 'billingSettings',
-          // `$ifNull` couvre le cas où le document existe sans le champ, et
-          // celui où il est créé par l'upsert : une seule expression, donc une
-          // seule opération atomique, sans branche de repli.
-          invoiceNextNumber: { $add: [{ $ifNull: ['$invoiceNextNumber', start] }, 1] },
-        },
-      },
-    ],
-    { returnDocument: 'before', upsert: true },
+    { $inc: { invoiceNextNumber: 1 } },
+    { returnDocument: 'before' },
   )
 
-  // `before` est nul lors de la toute première insertion : la valeur consommée
-  // est alors le point de départ configuré.
   const sequence =
     before && typeof before.invoiceNextNumber === 'number' ? before.invoiceNextNumber : start
 

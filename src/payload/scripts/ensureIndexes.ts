@@ -51,6 +51,17 @@ const INDEXES: PartialUniqueIndex[] = [
     reason: 'Empêche deux réservations simultanées du même créneau.',
   },
   {
+    collection: 'globals',
+    field: 'globalType',
+    name: 'globals_type_unique',
+    // Un global est par definition unique pour son type. Sans cet index, deux
+    // insertions concurrentes creeraient deux documents pour le meme global —
+    // et le compteur de numeros de facture, qui vit ici, distribuerait deux
+    // fois la meme valeur.
+    bsonType: 'string',
+    reason: 'Un seul document par type de reglage global.',
+  },
+  {
     collection: 'invoices',
     field: 'number',
     name: 'invoices_number_unique',
@@ -119,6 +130,8 @@ const runAsScript = async (): Promise<void> => {
 }
 
 // `payload run` exécute ce fichier directement ; un import de test ne passe pas ici.
-if (process.argv[1]?.includes('ensureIndexes')) {
+// `payload run` place le chemin du script quelque part dans argv, pas
+// necessairement en position 1 : on balaie l'ensemble.
+if (process.argv.some((arg) => arg.includes('ensureIndexes'))) {
   await runAsScript()
 }

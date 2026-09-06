@@ -25,7 +25,6 @@ import {
 } from './gallery'
 import { HeroBlock, PageIntroBlock, StatementBlock } from './hero'
 import {
-  AuthPrototypeBlock,
   ContactFormBlock,
   ContactInfoBlock,
   CtaBlock,
@@ -67,7 +66,6 @@ export const layoutBlocks: Block[] = [
   NewsletterFormBlock,
   // Pages spécifiques
   LegalContentBlock,
-  AuthPrototypeBlock,
   NoticeNoteBlock,
   SpacerBlock,
 ]

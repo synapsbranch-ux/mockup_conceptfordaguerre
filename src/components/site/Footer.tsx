@@ -82,16 +82,10 @@ export const Footer = async () => {
                     )
                   }
 
-                  // Réseau dont l'adresse n'est pas encore fournie : la mention
-                  // est conservée telle quelle plutôt que d'inventer un lien.
-                  return (
-                    <span className="pending-link social-link" key={key}>
-                      {icon}
-                      <span>
-                        {social.label} <small>{social.pendingLabel ?? 'à confirmer'}</small>
-                      </span>
-                    </span>
-                  )
+                  // Réseau sans adresse : l'entrée est omise plutôt que
+                  // rendue en lien mort. On n'invente pas d'URL, et on
+                  // n'affiche pas non plus une mention d'attente au visiteur.
+                  return []
                 })
               : (column.links ?? []).flatMap((entry, linkIndex) => {
                   const href = resolveHref(entry.link)

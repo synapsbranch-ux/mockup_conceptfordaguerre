@@ -2,14 +2,12 @@ import Link from 'next/link'
 
 import { ContactForm as ContactFormClient } from '@/components/forms/ContactForm'
 import { NewsletterForm } from '@/components/forms/NewsletterForm'
-import { SpaceAuthForm } from '@/components/forms/SpaceAuthForm'
 import { RichText } from '@/components/richtext/RichText'
 import { Arrow, Headline } from '@/components/site/primitives'
 import { SocialIcon } from '@/components/site/SocialIcon'
 import { resolveHref, targetProps } from '@/lib/links'
 import { getSiteSettings } from '@/lib/payload'
 import type {
-  AuthPrototypeBlock,
   ContactFormBlock,
   ContactInfoBlock,
   CtaBlock,
@@ -105,14 +103,10 @@ export const ContactInfo = async ({ block }: { block: ContactInfoBlock }) => {
                   </a>
                 )
               }
-              return (
-                <span className="social-link pending-link" key={key}>
-                  {icon}
-                  <span>
-                    {social.label} <small>{social.pendingLabel ?? 'à confirmer'}</small>
-                  </span>
-                </span>
-              )
+              // Réseau sans adresse : l'entrée est omise. Afficher un lien
+              // mort assorti d'une mention d'attente n'apporte rien au
+              // visiteur et donne au site un air inachevé.
+              return null
             })}
           </div>
         </div>
@@ -188,22 +182,3 @@ export const LegalContent = ({ block }: { block: LegalContentBlock }) => {
   )
 }
 
-export const AuthPrototype = ({ block }: { block: AuthPrototypeBlock }) => (
-  <section className="auth-page shell">
-    <div className="auth-intro">
-      {block.eyebrow && <p className="eyebrow">{block.eyebrow}</p>}
-      <h1>
-        <Headline segments={block.title} />
-      </h1>
-      {block.description && <p>{block.description}</p>}
-      {(block.benefits ?? []).length > 0 && (
-        <div className="auth-benefits">
-          {(block.benefits ?? []).map((benefit, index) => (
-            <span key={benefit.id ?? `b-${index}`}>{benefit.label}</span>
-          ))}
-        </div>
-      )}
-    </div>
-    <SpaceAuthForm block={block} />
-  </section>
-)

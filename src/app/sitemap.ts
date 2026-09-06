@@ -39,6 +39,36 @@ const sitemap = async (): Promise<MetadataRoute.Sitemap> => {
 
   const entries: MetadataRoute.Sitemap = []
 
+  /**
+   * Routes statiques, definies par le code plutot que par le CMS.
+   *
+   * La reservation n'y figure que si elle est ouverte : le plan du site ne
+   * doit mener qu'a des pages reellement utiles.
+   * Les zones privees — espace client, administration, CMS, authentification —
+   * en sont absentes et bloquees par robots.txt.
+   *
+   * `/forum` est ajoute plus bas, avec ses discussions.
+   */
+  const clientSpace = await payload
+    .findGlobal({ slug: 'clientSpaceSettings', depth: 0 })
+    .catch(() => null)
+
+  const staticRoutes: { path: string; priority: number; include: boolean }[] = [
+    { path: '/ressources', priority: 0.6, include: true },
+    { path: '/devis', priority: 0.7, include: true },
+    { path: '/reservation', priority: 0.6, include: clientSpace?.bookingEnabled !== false },
+  ]
+
+  for (const route of staticRoutes) {
+    if (!route.include) continue
+    entries.push({
+      url: url(route.path),
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: route.priority,
+    })
+  }
+
   for (const page of pages) {
     if (!page.slug || EXCLUDED_SLUGS.has(page.slug)) continue
     if (page.seo?.noIndex) continue

@@ -1,13 +1,21 @@
 # Jacques-Daguerre Valcy — portfolio et offre Datakle
 
-Site Next.js 16 piloté par **Payload CMS 3**. Chaque élément visible du site
-public — textes, images, navigation, mentions légales — est administrable
-depuis `/admin`, sans toucher au code.
+Site Next.js 16 piloté par **Payload CMS 3**, doublé d'un espace client et
+d'une administration métier. Chaque élément visible du site public — textes,
+images, navigation, mentions légales — est administrable sans toucher au code.
 
-- **Frontend public** : App Router, composants serveur, API Local Payload.
-- **CMS** : Payload 3.88, interface en français, à `/admin`.
-- **Base de données** : MongoDB.
-- **Médias** : GridFS par défaut, adaptateur S3 disponible.
+- **Site public** : App Router, composants serveur, API Local Payload.
+- **Espace client** : `/espace-client` — devis, propositions, factures, projets,
+  documents, rendez-vous, messagerie, forum et commentaires.
+- **Administration** : `/admin` — pilotage, relation client, modération, journal.
+- **Panneau CMS** : `/cms` — édition du contenu, blocs, versions, médias.
+- **Authentification** : Better Auth, identité unique pour les clients comme
+  pour le personnel. Google OAuth et courriel + mot de passe.
+- **Base de données** : MongoDB. **Médias** : GridFS par défaut, S3 disponible.
+
+Deux guides complètent ce fichier :
+[ADMIN_GUIDE.md](ADMIN_GUIDE.md) pour l'exploitation quotidienne, et
+[.env.example](.env.example) pour la configuration.
 
 ---
 
@@ -21,8 +29,11 @@ npm run payload:migrate-content
 npm run dev
 ```
 
-Le site répond sur `http://localhost:3000`, l'administration sur
-`http://localhost:3000/admin`.
+Le site répond sur `http://localhost:3000`, le tableau de bord
+d'administration sur `/admin` et le panneau CMS sur `/cms`.
+
+> Le panneau CMS était auparavant servi depuis `/admin`. Les anciens liens
+> profonds (`/admin/collections/...`) sont redirigés vers `/cms/...`.
 
 ### Variables d'environnement
 
@@ -48,8 +59,12 @@ Les clés sont décrites dans [.env.example](.env.example). Les indispensables :
 | `npm run dev` | Serveur de développement. |
 | `npm run build` / `npm start` | Build et service en production. |
 | `npm run lint` | ESLint. |
-| `npm test` | Tests unitaires et d'intégration (25 cas). |
-| `npm run verify:routes` | Contrôle structurel des 11 routes publiques et des 404. |
+| `npm run typecheck` | Vérification TypeScript. |
+| `npm test` | Tests unitaires et d'intégration (160 cas). |
+| `npm run verify:routes` | Contrôle structurel des routes publiques et des 404. |
+| `npm run db:ensure-indexes` | Pose les index uniques partiels que Payload ne sait pas déclarer. **Requis après une restauration.** |
+| `npm run auth:migrate` | Relie les comptes existants à Better Auth. Aperçu par défaut, `-- --apply` pour écrire. |
+| `npm run content:clean` | Retire les textes de chantier du contenu. Aperçu par défaut, `-- --apply` pour écrire. |
 | `npm run payload:generate-types` | Régénère `src/payload-types.ts`. |
 | `npm run payload:bootstrap-admin` | Crée les comptes super-administrateurs. |
 | `npm run payload:migrate-media` | Téléverse les images sources dans la collection Media. |
@@ -208,24 +223,131 @@ curl -X POST http://localhost:3000/api/revalidate -H "x-revalidate-secret: $PREV
 
 ---
 
+## Authentification
+
+Better Auth est le **système d'identité unique** : clients et personnel
+partagent la même collection `users`, sans mécanisme de synchronisation. Le
+panneau CMS reconnaît une session Better Auth via une stratégie
+d'authentification personnalisée.
+
+### Rôles
+
+`customer` (défaut) · `editor` · `super-admin`.
+
+Le rôle n'est **jamais** accepté depuis une requête client : une inscription
+transportant `role: "super-admin"` crée malgré tout un `customer`. Un rôle
+inconnu ou absent retombe sur `customer`.
+
+### Google OAuth
+
+Dans la console Google Cloud, créer un identifiant OAuth 2.0 et déclarer
+l'URI de redirection **exactement** :
+
+```
+<NEXT_PUBLIC_SERVER_URL>/api/auth/callback/google
+```
+
+Par exemple `http://localhost:3000/api/auth/callback/google` en développement.
+
+Renseigner ensuite `GOOGLE_CLIENT_ID` et `GOOGLE_CLIENT_SECRET`. Sans elles, le
+bouton « Continuer avec Google » est masqué et la connexion par courriel reste
+disponible — le site démarre normalement.
+
+### Reprise des comptes existants
+
+Les empreintes de mots de passe de l'ancienne authentification Payload ne sont
+**pas transposables** vers Better Auth. Les comptes antérieurs à la migration ne
+peuvent donc pas se connecter avec leur ancien mot de passe.
+
+```bash
+npm run auth:migrate              # aperçu, n'écrit rien
+npm run auth:migrate -- --apply   # applique
+```
+
+Le rattachement se fait **uniquement par adresse courriel vérifiée**. Les
+adresses listées dans `MIGRATION_VERIFIED_EMAILS` sont marquées comme vérifiées
+afin qu'une connexion Google rejoigne le compte existant plutôt que d'en créer
+un doublon — à retirer une fois la reprise effectuée.
+
+À défaut, `npm run payload:bootstrap-admin` rattache de nouveaux identifiants au
+compte existant. L'identifiant technique ne change pas : devis, projets,
+documents et conversations restent liés.
+
+Le script est **idempotent** et refuse de continuer en cas de collision
+d'adresses après normalisation.
+
+---
+
+## Sauvegarde et restauration
+
+```bash
+# Sauvegarde complète
+mongodump --uri="$DATABASE_URI" --out="sauvegarde-$(date +%Y%m%d-%H%M)"
+
+# Restauration
+mongorestore --uri="$DATABASE_URI" --drop sauvegarde-.../daguerre_cms
+
+# Indispensable après restauration
+npm run db:ensure-indexes
+```
+
+La base contient tout, binaires GridFS compris : une sauvegarde de la base
+suffit à tout restaurer. `--drop` écrase les collections — vérifier la cible
+avant de lancer la commande.
+
+`db:ensure-indexes` pose les index uniques **partiels** que la configuration
+Payload ne sait pas exprimer. Sans eux, la prévention des doubles réservations
+et l'unicité des numéros de facture seraient absentes, silencieusement.
+
+Procédure détaillée : [ADMIN_GUIDE.md § 9](ADMIN_GUIDE.md).
+
+---
+
 ## Sécurité
 
 Voir [reports/security-summary.md](reports/security-summary.md) pour le détail.
-En résumé : rôles `super-admin` et `editor` cloisonnés, aucune inscription
-publique, contenu non publié inaccessible aux anonymes, soumissions publiques
-protégées par pot de miel, délai minimal et limitation de débit, CORS et CSRF
-restreints à l'origine déclarée, aucune adresse IP conservée.
+En résumé :
+
+- **Rôles cloisonnés**, jamais choisis par l'utilisateur ; rôle inconnu →
+  `customer`.
+- **Le site conserve toujours un administrateur actif** : rétrograder,
+  suspendre ou supprimer le dernier est refusé. Personne ne modifie son propre
+  rôle ni son propre statut.
+- **Propriété vérifiée à chaque requête.** Une ressource appartenant à
+  quelqu'un d'autre répond 404, jamais 403 : l'existence d'une donnée privée
+  n'est pas divulguée.
+- **Contenu utilisateur rendu en nœuds React**, jamais interprété comme du
+  balisage — aucun `dangerouslySetInnerHTML` dans la chaîne de rendu des
+  commentaires, discussions et messages.
+- **Documents privés** servis uniquement par une route qui revérifie
+  l'autorisation, en `Content-Disposition: attachment` et sans cache partagé.
+  Aucune URL publique permanente.
+- **Notes internes** dans une collection distincte, jamais importée par du code
+  client.
+- **Invariants tenus par la base** et non par l'interface : anti-double
+  réservation, unicité des numéros de facture, conversion unique d'une
+  proposition en projet.
+- Soumissions publiques protégées par pot de miel, délai minimal et limitation
+  de débit ; CORS et CSRF restreints à l'origine déclarée ; aucune adresse IP
+  conservée.
+- **Journal d'audit en ajout seul** : ni modification ni suppression.
 
 ---
 
 ## Vérification
 
 ```bash
-npm run lint && npx tsc --noEmit && npm run build
-npm test                          # 25 cas
-npm run verify:routes             # structure des 11 routes + 404
+npm run lint
+npm run typecheck
+npm test                          # 160 cas
+npm run build
+npm run verify:routes             # structure des routes publiques + 404
 node scripts/acceptance.mjs       # 21 critères d'acceptation
 ```
+
+Les suites d'intégration s'exécutent sur une **base jetable**, créée puis
+supprimée à chaque exécution : aucune écriture n'atteint la base de production
+et aucun compte fictif n'y est ajouté.
 
 `scripts/acceptance.mjs` exige un serveur démarré et le fichier
 `.admin-credentials.local`. Il restaure l'état initial à chaque exécution.

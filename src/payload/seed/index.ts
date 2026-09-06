@@ -132,7 +132,7 @@ const upsertBySlug = async <T>({
  * `src/pages/blog/[slug].js`. Il est repris tel quel — le texte définitif reste
  * à rédiger, ce que signale l'encart de brouillon ajouté à la suite.
  */
-const prototypeArticleBody = () =>
+const defaultArticleBody = () =>
   lexical([
     heading('Partir de la décision'),
     paragraph(
@@ -149,10 +149,6 @@ const prototypeArticleBody = () =>
     ),
   ])
 
-const ARTICLE_LEAD =
-  'Cet article est présenté sous forme de prototype éditorial. Le texte final sera rédigé et validé dans le micro CMS avant publication.'
-
-const ARTICLE_DRAFT_NOTE = 'Brouillon de démonstration · Contenu à enrichir dans le CMS.'
 
 // --- Seed --------------------------------------------------------------------
 
@@ -221,18 +217,8 @@ export const seed = async (payload: Payload): Promise<{ reports: SeedReport[]; u
       hero: mediaId(article.mediaKey),
       readingTime: article.read,
       publishedLabel: article.date,
-      lead: ARTICLE_LEAD,
-      body: prototypeArticleBody(),
-      blocks: [
-        {
-          blockType: 'noticeNote',
-          blockName: 'Mention de brouillon',
-          visible: true,
-          variant: 'draft-note',
-          text: ARTICLE_DRAFT_NOTE,
-        },
-      ],
-      // Le prototype met le premier article à la une (`const [featured, ...rest]`).
+      body: defaultArticleBody(),
+      // Le premier article est mis à la une.
       featured: article.slug === legacyArticles[0].slug,
       order: (legacyArticles.findIndex((entry) => entry.slug === article.slug) + 1) * 10,
     }),

@@ -14,7 +14,6 @@ import { ImageSection, ImageText, NoticeNote, Quote, RichTextSection, Spacer } f
 import { Gallery, GalleryFour, Metrics, Timeline, ValuesList } from './gallery'
 import { Hero, PageIntro, Statement } from './hero'
 import {
-  AuthPrototype,
   ContactForm,
   ContactInfo,
   Cta,
@@ -75,8 +74,6 @@ const renderOne = (block: LayoutBlock, key: string): ReactNode => {
       return <NewsletterSection key={key} block={block} />
     case 'legalContent':
       return <LegalContent key={key} block={block} />
-    case 'authPrototype':
-      return <AuthPrototype key={key} block={block} />
     case 'noticeNote':
       return <NoticeNote key={key} block={block} />
     case 'spacer':

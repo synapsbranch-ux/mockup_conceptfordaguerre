@@ -150,12 +150,11 @@ export const QuoteBlock: Block = {
 }
 
 /**
- * Encart « à confirmer ».
+ * Encart d'information.
  *
- * Centralise dans le CMS toutes les mentions provisoires du prototype
- * (`.about-note`, `.prototype-note`, `.legal-warning`, `.article-draft-note`,
- * `.prototype-caption`) afin qu'aucune information manquante ne soit inventée
- * ni figée dans le code.
+ * Mentions editoriales — mise en avant, note de bas de page, avertissement
+ * juridique, legende — administrables depuis le CMS plutot que figees dans le
+ * code, afin qu'une reformulation n'exige pas de deploiement.
  */
 export const NoticeNoteBlock: Block = {
   slug: 'noticeNote',
@@ -165,20 +164,19 @@ export const NoticeNoteBlock: Block = {
     ...blockBaseFields,
     variantField(
       [
-        { label: 'Encart « à compléter » (fond clair)', value: 'about-note' },
-        { label: 'Note de bas de page', value: 'prototype-note' },
+        { label: 'Encart mis en avant (fond clair)', value: 'about-note' },
+        { label: 'Note de bas de page', value: 'footnote' },
         { label: 'Avertissement juridique', value: 'legal-warning' },
-        { label: 'Mention de brouillon', value: 'draft-note' },
         { label: 'Légende discrète', value: 'caption' },
       ],
-      'prototype-note',
+      'footnote',
     ),
     {
       name: 'label',
       type: 'text',
       label: 'Étiquette',
       maxLength: 80,
-      admin: { description: 'Affichée uniquement par la variante « à compléter ».' },
+      admin: { description: 'Affichée uniquement par la variante « encart mis en avant ».' },
     },
     { name: 'text', type: 'textarea', label: 'Texte', required: true, maxLength: 700 },
   ],
