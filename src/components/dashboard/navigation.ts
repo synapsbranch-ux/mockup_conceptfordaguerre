@@ -1,30 +1,15 @@
 import type { LucideIcon } from 'lucide-react'
 import {
-  BadgeEuro,
   Bell,
   Bookmark,
   Building2,
-  CalendarClock,
-  CalendarCog,
-  FileSignature,
-  FileStack,
   FileText,
-  FolderKanban,
   Gauge,
-  Inbox,
   LayoutDashboard,
-  Mail,
-  MessageSquare,
   MessagesSquare,
   Newspaper,
-  ReceiptText,
-  ScrollText,
-  Send,
-  Settings,
   ShieldAlert,
-  Sparkles,
   Tags,
-  Users,
 } from 'lucide-react'
 
 /**
@@ -36,6 +21,12 @@ import {
  *
  * `badge` nomme un compteur calculé côté serveur. Un compteur absent ou nul
  * n'affiche rien — jamais un zéro décoratif ni une valeur inventée.
+ *
+ * IMPORTANT — ce modèle ne liste que des destinations qui **existent**. Une
+ * entrée est ajoutée en même temps que l'écran qu'elle désigne, jamais avant :
+ * une barre latérale qui mène à des 404 promet des fonctions absentes, ce qui
+ * est pire qu'une barre courte. Les clés de `BadgeKey` couvrent en revanche
+ * déjà les domaines à venir, car les compteurs sont calculés côté serveur.
  */
 
 export type NavItem = {
@@ -77,60 +68,12 @@ export const CUSTOMER_NAV: NavGroup[] = [
   {
     label: 'Aperçu',
     items: [
-      {
-        title: 'Tableau de bord',
-        href: '/espace-client',
-        icon: LayoutDashboard,
-        exact: true,
-      },
+      { title: 'Tableau de bord', href: '/espace-client', icon: LayoutDashboard, exact: true },
       {
         title: 'Notifications',
         href: '/espace-client/notifications',
         icon: Bell,
         badge: 'unreadNotifications',
-      },
-    ],
-  },
-  {
-    label: 'Prestations',
-    items: [
-      { title: 'Devis', href: '/espace-client/devis', icon: FileSignature },
-      {
-        title: 'Propositions',
-        href: '/espace-client/propositions',
-        icon: ScrollText,
-        badge: 'proposalsAwaitingDecision',
-      },
-      { title: 'Services', href: '/espace-client/services', icon: Sparkles },
-      { title: 'Projets', href: '/espace-client/projets', icon: FolderKanban },
-      {
-        title: 'Factures',
-        href: '/espace-client/factures',
-        icon: ReceiptText,
-        badge: 'unpaidInvoices',
-      },
-    ],
-  },
-  {
-    label: 'Échanges',
-    items: [
-      {
-        title: 'Messages',
-        href: '/espace-client/messages',
-        icon: MessageSquare,
-        badge: 'unreadMessages',
-      },
-      {
-        title: 'Rendez-vous',
-        href: '/espace-client/rendez-vous',
-        icon: CalendarClock,
-        badge: 'upcomingAppointments',
-      },
-      {
-        title: 'Documents',
-        href: '/espace-client/documents',
-        icon: FileStack,
-        badge: 'newDocuments',
       },
     ],
   },
@@ -156,55 +99,8 @@ export const ADMIN_NAV: NavGroup[] = [
     items: [{ title: 'Tableau de bord', href: '/admin', icon: Gauge, exact: true }],
   },
   {
-    label: 'Commercial',
+    label: 'Communauté',
     items: [
-      {
-        title: 'Devis',
-        href: '/admin/devis',
-        icon: FileSignature,
-        badge: 'quotesToProcess',
-      },
-      { title: 'Propositions', href: '/admin/propositions', icon: ScrollText },
-      { title: 'Factures', href: '/admin/factures', icon: ReceiptText },
-      { title: 'Paiements', href: '/admin/paiements', icon: BadgeEuro },
-      {
-        title: 'Projets',
-        href: '/admin/projets',
-        icon: FolderKanban,
-        badge: 'activeProjects',
-      },
-      { title: 'Services', href: '/admin/services', icon: Sparkles },
-    ],
-  },
-  {
-    label: 'Relation client',
-    items: [
-      { title: 'Clients', href: '/admin/clients', icon: Users },
-      {
-        title: 'Conversations',
-        href: '/admin/conversations',
-        icon: MessageSquare,
-        badge: 'adminUnreadConversations',
-      },
-      {
-        title: 'Messages de contact',
-        href: '/admin/contact',
-        icon: Inbox,
-        badge: 'newContactMessages',
-      },
-      {
-        title: 'Rendez-vous',
-        href: '/admin/rendez-vous',
-        icon: CalendarClock,
-        badge: 'appointmentsToConfirm',
-      },
-      { title: 'Disponibilités', href: '/admin/disponibilites', icon: CalendarCog },
-    ],
-  },
-  {
-    label: 'Contenu et communauté',
-    items: [
-      { title: 'Articles', href: '/admin/articles', icon: Newspaper },
       {
         title: 'Commentaires',
         href: '/admin/commentaires',
@@ -219,23 +115,11 @@ export const ADMIN_NAV: NavGroup[] = [
         icon: ShieldAlert,
         badge: 'forumReports',
       },
-      { title: 'Documents', href: '/admin/documents', icon: FileStack },
-    ],
-  },
-  {
-    label: 'Diffusion',
-    items: [
-      { title: 'Abonnés', href: '/admin/infolettre/abonnes', icon: Mail },
-      { title: 'Campagnes', href: '/admin/infolettre/campagnes', icon: Send },
     ],
   },
   {
     label: 'Système',
-    items: [
-      { title: 'Pages et médias (CMS)', href: '/cms', icon: FileText },
-      { title: 'Journal d’activité', href: '/admin/journal', icon: ScrollText },
-      { title: 'Paramètres', href: '/admin/parametres', icon: Settings },
-    ],
+    items: [{ title: 'Pages et médias (CMS)', href: '/cms', icon: FileText }],
   },
 ]
 

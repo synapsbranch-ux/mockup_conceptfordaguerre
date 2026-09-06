@@ -1,7 +1,7 @@
 import {
   Bell,
+  Building2,
   CalendarClock,
-  FileSignature,
   FileStack,
   MessageSquare,
   MessagesSquare,
@@ -163,25 +163,21 @@ const EspaceClientPage = async () => {
           label="Propositions à décider"
           value={counters.proposalsAwaitingDecision ?? 0}
           icon={ScrollText}
-          href="/espace-client/propositions"
         />
         <StatCard
           label="Factures à régler"
           value={counters.unpaidInvoices ?? 0}
           icon={ReceiptText}
-          href="/espace-client/factures"
         />
         <StatCard
           label="Messages non lus"
           value={counters.unreadMessages ?? 0}
           icon={MessageSquare}
-          href="/espace-client/messages"
         />
         <StatCard
           label="Rendez-vous à venir"
           value={counters.upcomingAppointments ?? 0}
           icon={CalendarClock}
-          href="/espace-client/rendez-vous"
         />
       </div>
 
@@ -190,33 +186,27 @@ const EspaceClientPage = async () => {
         <SectionHeading title={settings?.quickActionsTitle ?? 'Actions rapides'} />
         <div className="flex flex-wrap gap-3">
           <Button asChild>
-            <Link href="/espace-client/devis/nouveau">
-              <FileSignature aria-hidden="true" />
-              Demander un devis
+            <Link href="/espace-client/articles">
+              <Newspaper aria-hidden="true" />
+              Parcourir les articles
             </Link>
           </Button>
           <Button asChild variant="outline">
-            <Link href="/espace-client/rendez-vous/reserver">
-              <CalendarClock aria-hidden="true" />
-              Réserver une rencontre
-            </Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link href="/espace-client/messages">
-              <MessageSquare aria-hidden="true" />
-              Contacter l’équipe
-            </Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link href="/espace-client/documents">
-              <FileStack aria-hidden="true" />
-              Mes documents
-            </Link>
-          </Button>
-          <Button asChild variant="ghost">
             <Link href="/forum">
               <MessagesSquare aria-hidden="true" />
               Forum
+            </Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/espace-client/notifications">
+              <Bell aria-hidden="true" />
+              Notifications
+            </Link>
+          </Button>
+          <Button asChild variant="ghost">
+            <Link href="/espace-client/profil">
+              <Building2 aria-hidden="true" />
+              Mon profil
             </Link>
           </Button>
         </div>
@@ -246,16 +236,11 @@ const EspaceClientPage = async () => {
                 <p className="text-muted-foreground text-xs">
                   Fuseau : {nextAppointment.customerTimezone}
                 </p>
-                <Button asChild variant="link" className="h-auto p-0">
-                  <Link href="/espace-client/rendez-vous">Voir le détail</Link>
-                </Button>
               </div>
             ) : (
               <EmptyState
                 icon={CalendarClock}
                 title={settings?.emptyAppointments ?? 'Aucun rendez-vous prévu.'}
-                actionLabel="Réserver"
-                actionHref="/espace-client/rendez-vous/reserver"
                 className="border-0 py-6"
               />
             )}
@@ -376,12 +361,7 @@ const EspaceClientPage = async () => {
               <ul className="divide-border divide-y">
                 {documents.docs.map((document) => (
                   <li key={document.id} className="py-3">
-                    <Link
-                      href="/espace-client/documents"
-                      className="text-sm font-medium hover:underline"
-                    >
-                      {document.title}
-                    </Link>
+<span className="text-sm font-medium">{document.title}</span>
                     <p className="text-muted-foreground text-xs">{dayOnly(document.createdAt)}</p>
                   </li>
                 ))}
