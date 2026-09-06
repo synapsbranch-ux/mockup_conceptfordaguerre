@@ -4,7 +4,7 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 
 import { AppSidebar } from './AppSidebar'
 import { DashboardHeader } from './DashboardHeader'
-import type { BadgeCounts, NavGroup } from './navigation'
+import type { BadgeCounts, NavVariant } from './navigation'
 import type { NavUserProfile } from './NavUser'
 
 /**
@@ -15,7 +15,7 @@ import type { NavUserProfile } from './NavUser'
  * déjà au choix de la personne — sans saut visuel à l'hydratation.
  */
 export const DashboardShell = async ({
-  groups,
+  variant,
   badges,
   user,
   brandLabel,
@@ -25,7 +25,8 @@ export const DashboardShell = async ({
   headerActions,
   children,
 }: {
-  groups: NavGroup[]
+  /** Clé du modèle de navigation ; le modèle lui-même reste côté client. */
+  variant: NavVariant
   badges: BadgeCounts
   user: NavUserProfile
   brandLabel: string
@@ -41,7 +42,7 @@ export const DashboardShell = async ({
   return (
     <SidebarProvider defaultOpen={defaultOpen}>
       <AppSidebar
-        groups={groups}
+        variant={variant}
         badges={badges}
         user={user}
         brandLabel={brandLabel}
@@ -50,7 +51,7 @@ export const DashboardShell = async ({
       />
       <SidebarInset>
         <DashboardHeader
-          groups={groups}
+          variant={variant}
           rootLabel={rootLabel}
           rootHref={rootHref}
           actions={headerActions}

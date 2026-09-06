@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react'
 
 import { DashboardShell } from '@/components/dashboard/DashboardShell'
-import { CUSTOMER_NAV } from '@/components/dashboard/navigation'
 import { toNavUserProfile } from '@/components/dashboard/profile'
 import { requireUser } from '@/lib/auth/dal'
 import { customerCounters } from '@/lib/server/counters'
@@ -19,7 +18,7 @@ const EspaceClientLayout = async ({ children }: { children: ReactNode }) => {
 
   return (
     <DashboardShell
-      groups={CUSTOMER_NAV}
+      variant="customer"
       badges={badges}
       user={toNavUserProfile(user)}
       brandLabel="Espace client"

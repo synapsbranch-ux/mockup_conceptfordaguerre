@@ -14,8 +14,8 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 
-import { breadcrumbFor } from './navigation'
-import type { NavGroup } from './navigation'
+import { breadcrumbFor, NAV_BY_VARIANT } from './navigation'
+import type { NavVariant } from './navigation'
 
 /**
  * En-tête collante des tableaux de bord : bouton de repli, fil d'Ariane et
@@ -25,18 +25,18 @@ import type { NavGroup } from './navigation'
  * pas diverger entre la barre latérale et le fil.
  */
 export const DashboardHeader = ({
-  groups,
+  variant,
   rootLabel,
   rootHref,
   actions,
 }: {
-  groups: NavGroup[]
+  variant: NavVariant
   rootLabel: string
   rootHref: string
   actions?: React.ReactNode
 }) => {
   const pathname = usePathname()
-  const trail = breadcrumbFor(groups, pathname, rootLabel, rootHref)
+  const trail = breadcrumbFor(NAV_BY_VARIANT[variant], pathname, rootLabel, rootHref)
 
   return (
     <header className="bg-background/85 sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b backdrop-blur">

@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react'
 
 import { DashboardShell } from '@/components/dashboard/DashboardShell'
-import { ADMIN_NAV } from '@/components/dashboard/navigation'
 import { toNavUserProfile } from '@/components/dashboard/profile'
 import { requireStaff } from '@/lib/auth/dal'
 import { adminCounters } from '@/lib/server/counters'
@@ -18,7 +17,7 @@ const AdminLayout = async ({ children }: { children: ReactNode }) => {
 
   return (
     <DashboardShell
-      groups={ADMIN_NAV}
+      variant="admin"
       badges={badges}
       user={toNavUserProfile(user)}
       brandLabel="Administration"

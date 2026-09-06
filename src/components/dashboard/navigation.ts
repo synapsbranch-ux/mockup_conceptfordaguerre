@@ -186,6 +186,26 @@ export const ADMIN_NAV: NavGroup[] = [
   },
 ]
 
+/**
+ * Clé du modèle de navigation à afficher.
+ *
+ * Les deux tableaux ci-dessus portent des composants d'icône (`LucideIcon`),
+ * qui sont des fonctions : React refuse de les sérialiser à travers la
+ * frontière serveur → client. Un composant serveur ne doit donc **jamais**
+ * passer un `NavGroup[]` en propriété à `AppSidebar` ou `DashboardHeader` — le
+ * rendu échoue alors avec « Functions cannot be passed directly to Client
+ * Components », et tout le tableau de bord répond 500.
+ *
+ * La coque transmet cette clé, et chaque composant client résout le modèle
+ * lui-même par cette table.
+ */
+export type NavVariant = 'customer' | 'admin'
+
+export const NAV_BY_VARIANT: Record<NavVariant, NavGroup[]> = {
+  customer: CUSTOMER_NAV,
+  admin: ADMIN_NAV,
+}
+
 /** Vrai lorsque `pathname` correspond à l'entrée de navigation. */
 export const isNavItemActive = (item: NavItem, pathname: string): boolean => {
   if (item.exact) return pathname === item.href

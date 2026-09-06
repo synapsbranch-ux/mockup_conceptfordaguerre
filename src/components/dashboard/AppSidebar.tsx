@@ -17,8 +17,8 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from '@/components/ui/sidebar'
-import { isNavItemActive } from './navigation'
-import type { BadgeCounts, NavGroup } from './navigation'
+import { isNavItemActive, NAV_BY_VARIANT } from './navigation'
+import type { BadgeCounts, NavVariant } from './navigation'
 import { NavUser } from './NavUser'
 import type { NavUserProfile } from './NavUser'
 
@@ -34,14 +34,14 @@ import type { NavUserProfile } from './NavUser'
  * aucune pastille : jamais de zéro décoratif.
  */
 export const AppSidebar = ({
-  groups,
+  variant,
   badges,
   user,
   brandLabel,
   brandHint,
   homeHref,
 }: {
-  groups: NavGroup[]
+  variant: NavVariant
   badges: BadgeCounts
   user: NavUserProfile
   brandLabel: string
@@ -49,6 +49,9 @@ export const AppSidebar = ({
   homeHref: string
 }) => {
   const pathname = usePathname()
+  // Résolu ici, jamais reçu en propriété : les icônes ne franchissent pas
+  // la frontière serveur → client.
+  const groups = NAV_BY_VARIANT[variant]
 
   return (
     <Sidebar collapsible="icon" className="border-r-0">
