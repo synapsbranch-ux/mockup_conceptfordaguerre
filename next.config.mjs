@@ -44,7 +44,9 @@ const nextConfig = {
   },
 
   // Payload et ses dépendances natives ne doivent pas être bundlées côté serveur.
-  serverExternalPackages: ['mongoose', 'sharp'],
+  // `pdfkit` charge ses metriques de police (.afm) depuis le disque a
+  // l'execution : bundle par Next, il ne les retrouverait plus.
+  serverExternalPackages: ['mongoose', 'sharp', 'pdfkit'],
 }
 
 export default withPayload(nextConfig, { devBundleServerPackages: false })

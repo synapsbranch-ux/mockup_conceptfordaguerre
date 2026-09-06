@@ -46,6 +46,57 @@ export const Services: CollectionConfig = {
     },
     { name: 'title', type: 'text', label: 'Nom du service', required: true, maxLength: 120 },
     {
+      name: 'category',
+      type: 'text',
+      label: 'Catégorie',
+      maxLength: 60,
+      index: true,
+      admin: { description: 'Ex. « Analyse », « Formation », « Automatisation ».' },
+    },
+    {
+      name: 'pricing',
+      type: 'group',
+      label: 'Tarification',
+      admin: {
+        description:
+          'Montant indicatif seulement. Le prix ferme est toujours porté par une proposition.',
+      },
+      fields: [
+        {
+          name: 'kind',
+          type: 'select',
+          label: 'Mode',
+          defaultValue: 'quote',
+          options: [
+            { label: 'Sur devis', value: 'quote' },
+            { label: 'À partir de', value: 'from' },
+            { label: 'Forfait', value: 'fixed' },
+          ],
+        },
+        {
+          name: 'amount',
+          type: 'number',
+          label: 'Montant indicatif (centimes)',
+          min: 0,
+          admin: {
+            condition: (_data, sibling) => sibling?.kind && sibling.kind !== 'quote',
+            description: 'Ex. 250000 pour 2 500,00 $.',
+          },
+        },
+      ],
+    },
+    {
+      name: 'archived',
+      type: 'checkbox',
+      label: 'Archivé',
+      defaultValue: false,
+      index: true,
+      admin: {
+        position: 'sidebar',
+        description: 'Retire le service du catalogue sans toucher aux projets qui l’utilisent.',
+      },
+    },
+    {
       name: 'number',
       type: 'text',
       label: 'Numéro affiché',

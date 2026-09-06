@@ -51,6 +51,15 @@ const INDEXES: PartialUniqueIndex[] = [
     reason: 'Empêche deux réservations simultanées du même créneau.',
   },
   {
+    collection: 'invoices',
+    field: 'number',
+    name: 'invoices_number_unique',
+    // Texte. Partiel car un brouillon n'a pas encore de numero : un index
+    // unique ordinaire ferait entrer en collision tous les brouillons.
+    bsonType: 'string',
+    reason: 'Deux factures ne peuvent pas porter le meme numero.',
+  },
+  {
     collection: 'clientprojects',
     field: 'sourceProposal',
     name: 'clientprojects_source_proposal_unique',

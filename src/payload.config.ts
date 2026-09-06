@@ -34,6 +34,7 @@ import {
   Media,
   MeetingTypes,
   Messages,
+  NewsletterCampaigns,
   NewsletterSubscribers,
   Notifications,
   Pages,
@@ -130,6 +131,7 @@ export default buildConfig({
     InternalNotes,
     ContactSubmissions,
     NewsletterSubscribers,
+    NewsletterCampaigns,
     Notifications,
     // Systeme
     Users,

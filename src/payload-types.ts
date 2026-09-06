@@ -97,6 +97,7 @@ export interface Config {
     internalNotes: InternalNote;
     contactSubmissions: ContactSubmission;
     newsletterSubscribers: NewsletterSubscriber;
+    newsletterCampaigns: NewsletterCampaign;
     notifications: Notification;
     users: User;
     auditLog: AuditLog;
@@ -138,6 +139,7 @@ export interface Config {
     internalNotes: InternalNotesSelect<false> | InternalNotesSelect<true>;
     contactSubmissions: ContactSubmissionsSelect<false> | ContactSubmissionsSelect<true>;
     newsletterSubscribers: NewsletterSubscribersSelect<false> | NewsletterSubscribersSelect<true>;
+    newsletterCampaigns: NewsletterCampaignsSelect<false> | NewsletterCampaignsSelect<true>;
     notifications: NotificationsSelect<false> | NotificationsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     auditLog: AuditLogSelect<false> | AuditLogSelect<true>;
@@ -919,6 +921,24 @@ export interface Service {
   order?: number | null;
   featured?: boolean | null;
   title: string;
+  /**
+   * Ex. « Analyse », « Formation », « Automatisation ».
+   */
+  category?: string | null;
+  /**
+   * Montant indicatif seulement. Le prix ferme est toujours porté par une proposition.
+   */
+  pricing?: {
+    kind?: ('quote' | 'from' | 'fixed') | null;
+    /**
+     * Ex. 250000 pour 2 500,00 $.
+     */
+    amount?: number | null;
+  };
+  /**
+   * Retire le service du catalogue sans toucher aux projets qui l’utilisent.
+   */
+  archived?: boolean | null;
   /**
    * Ex. « 01 ».
    */
@@ -2611,6 +2631,43 @@ export interface NewsletterSubscriber {
   createdAt: string;
 }
 /**
+ * Une campagne envoyée est définitive : son contenu est figé et elle ne peut pas être renvoyée.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "newsletterCampaigns".
+ */
+export interface NewsletterCampaign {
+  id: string;
+  subject: string;
+  /**
+   * Court extrait affiché après l’objet dans la boîte de réception.
+   */
+  preheader?: string | null;
+  /**
+   * Texte brut. Aucun HTML n’est interprété : le rendu échappe systématiquement le contenu.
+   */
+  body: string;
+  audience: 'subscribed' | 'subscribed_and_customers';
+  status: 'draft' | 'scheduled' | 'sent' | 'failed';
+  scheduledFor?: string | null;
+  sentAt?: string | null;
+  /**
+   * Nombre réel constaté à l’envoi, jamais une estimation.
+   */
+  recipientCount?: number | null;
+  /**
+   * Constat brut. Un échec est consigné tel quel, jamais masqué en succès.
+   */
+  deliveryReport?: {
+    delivered?: number | null;
+    failed?: number | null;
+    lastError?: string | null;
+  };
+  testSentTo?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Générées automatiquement. Aucune saisie manuelle n’est prévue.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -2928,6 +2985,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'newsletterSubscribers';
         value: string | NewsletterSubscriber;
+      } | null)
+    | ({
+        relationTo: 'newsletterCampaigns';
+        value: string | NewsletterCampaign;
       } | null)
     | ({
         relationTo: 'notifications';
@@ -3868,6 +3929,14 @@ export interface ServicesSelect<T extends boolean = true> {
   order?: T;
   featured?: T;
   title?: T;
+  category?: T;
+  pricing?:
+    | T
+    | {
+        kind?: T;
+        amount?: T;
+      };
+  archived?: T;
   number?: T;
   summary?: T;
   description?: T;
@@ -4524,6 +4593,30 @@ export interface NewsletterSubscribersSelect<T extends boolean = true> {
   subscribedAt?: T;
   unsubscribedAt?: T;
   notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "newsletterCampaigns_select".
+ */
+export interface NewsletterCampaignsSelect<T extends boolean = true> {
+  subject?: T;
+  preheader?: T;
+  body?: T;
+  audience?: T;
+  status?: T;
+  scheduledFor?: T;
+  sentAt?: T;
+  recipientCount?: T;
+  deliveryReport?:
+    | T
+    | {
+        delivered?: T;
+        failed?: T;
+        lastError?: T;
+      };
+  testSentTo?: T;
   updatedAt?: T;
   createdAt?: T;
 }
