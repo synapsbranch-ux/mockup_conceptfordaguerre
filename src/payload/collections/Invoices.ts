@@ -5,6 +5,7 @@ import { canTransitionInvoice, isInvoiceLocked } from '@/lib/commerce/transition
 import type { InvoiceStatus } from '@/lib/commerce/transitions'
 
 import { isCMSUser } from '../access'
+import { resolveActor } from '../access/actor'
 import { ownerOrStaffRead, serverWriteOnly, staffWriteOnly } from '../access/ownership'
 import { lineItemsField, totalsFields } from '../fields/lineItems'
 
@@ -232,7 +233,7 @@ export const Invoices: CollectionConfig = {
 
         // --- Garde de transition ----------------------------------------------
         if (previous && next.status && previous !== next.status) {
-          const actor = isCMSUser(req.user) ? 'staff' : 'customer'
+          const actor = resolveActor(req)
           if (!canTransitionInvoice(previous, next.status as InvoiceStatus, actor)) {
             throw new Error(
               `Transition refusée : « ${previous} » ne peut pas devenir « ${next.status} ».`,

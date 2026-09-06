@@ -36,7 +36,6 @@ let alice: Record<string, unknown>
 let bob: Record<string, unknown>
 let staff: Record<string, unknown>
 
-let publicDoc: string
 let authenticatedDoc: string
 let aliceDoc: string
 let archivedDoc: string
@@ -103,7 +102,7 @@ describe('documents prives', () => {
       )
     }
 
-    publicDoc = await mkDoc({ title: 'Guide public', category: 'guide', visibility: 'public' })
+    await mkDoc({ title: 'Guide public', category: 'guide', visibility: 'public' })
     authenticatedDoc = await mkDoc({
       title: 'Modele reserve',
       category: 'template',

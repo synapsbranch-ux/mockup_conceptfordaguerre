@@ -2077,6 +2077,7 @@ export interface QuoteRequest {
   customer?: (string | null) | User;
   guestEmail?: string | null;
   guestName?: string | null;
+  idempotencyKey?: string | null;
   claimedAt?: string | null;
   status: 'draft' | 'submitted' | 'in_review' | 'quoted' | 'accepted' | 'declined' | 'closed';
   priority?: ('low' | 'normal' | 'high') | null;
@@ -4141,6 +4142,7 @@ export interface QuoteRequestsSelect<T extends boolean = true> {
   customer?: T;
   guestEmail?: T;
   guestName?: T;
+  idempotencyKey?: T;
   claimedAt?: T;
   status?: T;
   priority?: T;

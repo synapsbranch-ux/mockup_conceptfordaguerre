@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { isCMSUser } from '../access'
+import { resolveActor } from '../access/actor'
 import { ownerOrStaffRead, serverWriteOnly, staffWriteOnly } from '../access/ownership'
 import { QUOTE_STATUSES } from '@/lib/commerce/transitions'
 import { canTransitionQuote } from '@/lib/commerce/transitions'
@@ -84,6 +85,22 @@ export const QuoteRequests: CollectionConfig = {
       maxLength: 160,
       access: { create: serverWriteOnly, update: staffWriteOnly },
       admin: { position: 'sidebar' },
+    },
+    {
+      /**
+       * Cle d'idempotence fournie par le navigateur.
+       *
+       * Empeche qu'un double clic ou un renvoi reseau cree deux demandes
+       * identiques. Unique par client, pas globalement : deux personnes
+       * peuvent legitimement generer la meme cle.
+       */
+      name: 'idempotencyKey',
+      type: 'text',
+      label: 'Cle d’idempotence',
+      maxLength: 64,
+      index: true,
+      access: { create: serverWriteOnly, update: serverWriteOnly, read: staffWriteOnly },
+      admin: { position: 'sidebar', readOnly: true },
     },
     {
       name: 'claimedAt',
@@ -244,7 +261,7 @@ export const QuoteRequests: CollectionConfig = {
         const previous = originalDoc?.status as QuoteStatus | undefined
         const requested = next.status as QuoteStatus | undefined
         if (previous && requested && previous !== requested) {
-          const actor = isCMSUser(req.user) ? 'staff' : 'customer'
+          const actor = resolveActor(req)
           if (!canTransitionQuote(previous, requested, actor)) {
             throw new Error(
               `Transition de statut refusée : « ${previous} » ne peut pas devenir « ${requested} ».`,

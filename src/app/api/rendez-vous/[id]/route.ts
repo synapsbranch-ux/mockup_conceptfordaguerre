@@ -71,7 +71,7 @@ export const PATCH = async (
           cancellationReason: body.data.reason ? cleanText(body.data.reason, 1000) : undefined,
         },
         overrideAccess: true,
-        context: { disableRevalidate: true },
+        context: { disableRevalidate: true, actor: 'customer' },
       })
 
       const emailResult = await sendAppointmentEmail({
@@ -151,7 +151,7 @@ export const PATCH = async (
           status: meetingType.requiresConfirmation ? 'requested' : 'confirmed',
         },
         overrideAccess: true,
-        context: { disableRevalidate: true },
+        context: { disableRevalidate: true, actor: 'customer' },
       })
     } catch (error) {
       const code = (error as { code?: number })?.code

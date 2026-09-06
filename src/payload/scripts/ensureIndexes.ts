@@ -1,90 +1,115 @@
 /**
- * Pose les index uniques **partiels** que la configuration Payload ne sait pas
- * exprimer.
+ * Pose les index que la configuration Payload ne sait pas exprimer.
  *
- * Pourquoi partiels plutôt qu'uniques tout court — MongoDB traite l'absence de
- * valeur comme une valeur. Un index unique ordinaire sur un champ nullable
- * ferait donc entrer en collision **tous** les documents qui ne le portent pas
- * entre eux : tous les brouillons de facture (pas encore de numéro), tous les
- * projets créés à la main (pas de proposition d'origine), tous les rendez-vous
- * annulés (créneau libéré). En restreignant l'index aux documents où le champ
- * est réellement renseigné, seuls les cas à contraindre le sont.
+ * Payload gère les index simples et composés, mais pas les
+ * `partialFilterExpression`. Or c'est exactement ce qu'il faut ici, pour deux
+ * invariants qui doivent tenir **sous concurrence** — l'instance MongoDB de
+ * production étant autonome, aucune transaction ne peut les garantir.
  *
- * Ces index sont la seule garantie d'exclusion mutuelle disponible : l'instance
- * MongoDB de production est autonome, sans replica set, donc sans transactions.
- * Deux écritures concurrentes ne peuvent pas être sérialisées autrement.
+ * Pourquoi partiel et non simplement unique :
+ *
+ *  - MongoDB traite l'absence de valeur comme une valeur. Un index unique
+ *    ordinaire ferait donc entrer en collision tous les documents « vides »
+ *    entre eux — tous les rendez-vous annulés, tous les projets créés
+ *    manuellement.
+ *  - `sparse` ne suffit pas : il ignore les documents où le champ est
+ *    **absent**, mais pas ceux où il vaut explicitement `null`. Or nos hooks
+ *    écrivent `null` pour libérer un créneau.
+ *
+ * En restreignant l'index aux documents dont le champ est une chaîne, seuls les
+ * enregistrements réellement porteurs de l'invariant sont contraints.
  *
  * Idempotent : relancer ne produit aucun changement.
  *
  *   npm run db:ensure-indexes
  */
-import { getAuthDb } from '@/lib/auth/db'
+import type { Db } from 'mongodb'
 
-type PartialIndex = {
+type PartialUniqueIndex = {
   collection: string
-  name: string
-  key: Record<string, 1>
   field: string
-  purpose: string
+  name: string
+  /**
+   * Type BSON reellement stocke.
+   *
+   * Determinant : un champ texte est une `string`, mais une RELATION est
+   * stockee par Payload en `objectId`. Filtrer sur le mauvais type produit un
+   * index qui ne couvre aucun document — donc une contrainte silencieusement
+   * inoperante.
+   */
+  bsonType: 'string' | 'objectId'
+  reason: string
 }
 
-const INDEXES: PartialIndex[] = [
+const INDEXES: PartialUniqueIndex[] = [
   {
     collection: 'appointments',
-    name: 'appointments_active_slot_unique',
-    key: { slotKey: 1 },
     field: 'slotKey',
-    purpose: 'un créneau ne peut être réservé qu’une fois tant qu’il est actif',
+    name: 'appointments_active_slot_unique',
+    // Champ texte calcule par un hook.
+    bsonType: 'string',
+    reason: 'Empêche deux réservations simultanées du même créneau.',
   },
   {
-    collection: 'invoices',
-    name: 'invoices_number_unique',
-    key: { number: 1 },
-    field: 'number',
-    purpose: 'un numéro de facture émise est unique',
-  },
-  {
-    collection: 'clientProjects',
-    name: 'client_projects_source_proposal_unique',
-    key: { sourceProposal: 1 },
+    collection: 'clientprojects',
     field: 'sourceProposal',
-    purpose: 'une proposition ne peut être convertie qu’une seule fois en projet',
+    name: 'clientprojects_source_proposal_unique',
+    // Relation : stockee en ObjectId, pas en chaine.
+    bsonType: 'objectId',
+    reason: 'Une proposition acceptée ne peut donner qu’un seul projet.',
   },
 ]
 
-const run = async (): Promise<void> => {
-  const db = getAuthDb()
-
-  console.log('\nIndex uniques partiels')
-  console.log('──────────────────────')
-
-  let created = 0
-  let unchanged = 0
-
+/**
+ * Crée les index manquants.
+ *
+ * `db` est injectable : les tests passent la connexion déjà ouverte par
+ * Payload, ce qui évite d'ouvrir un second client qui maintiendrait la boucle
+ * d'événements active.
+ */
+export const ensurePartialUniqueIndexes = async (
+  db: Db,
+  log: (message: string) => void = () => {},
+): Promise<void> => {
   for (const index of INDEXES) {
     const collection = db.collection(index.collection)
     const existing = await collection.indexes().catch(() => [])
 
     if (existing.some((entry) => entry.name === index.name)) {
-      console.log(`  • ${index.name} — déjà en place.`)
-      unchanged += 1
+      log(`  • ${index.name} — déjà en place.`)
       continue
     }
 
-    await collection.createIndex(index.key, {
-      name: index.name,
-      unique: true,
-      // N'indexe que les documents où le champ porte réellement une valeur.
-      partialFilterExpression: { [index.field]: { $type: index.field === 'sourceProposal' ? 'objectId' : 'string' } },
-    })
+    await collection.createIndex(
+      { [index.field]: 1 },
+      {
+        name: index.name,
+        unique: true,
+        partialFilterExpression: { [index.field]: { $type: index.bsonType } },
+      },
+    )
 
-    console.log(`  ✓ ${index.name} — créé (${index.purpose}).`)
-    created += 1
+    log(`  ✓ ${index.name} — créé. ${index.reason}`)
   }
+}
 
-  console.log('──────────────────────')
-  console.log(`${created} créé(s), ${unchanged} inchangé(s).\n`)
+/**
+ * Point d'entrée en ligne de commande.
+ *
+ * Volontairement séparé de la fonction ci-dessus : importer ce module ne doit
+ * jamais provoquer d'effet de bord ni terminer le processus appelant.
+ */
+const runAsScript = async (): Promise<void> => {
+  const { getAuthDb } = await import('@/lib/auth/db')
+  const { getAuthMongoClient } = await import('@/lib/auth/db')
+
+  await ensurePartialUniqueIndexes(getAuthDb(), (message) => console.log(message))
+
+  await getAuthMongoClient().close()
   process.exit(0)
 }
 
-await run()
+// `payload run` exécute ce fichier directement ; un import de test ne passe pas ici.
+if (process.argv[1]?.includes('ensureIndexes')) {
+  await runAsScript()
+}

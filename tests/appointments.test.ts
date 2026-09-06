@@ -3,6 +3,8 @@ import { after, before, describe, it } from 'node:test'
 
 import type { Payload } from 'payload'
 
+import { isDuplicateKeyError } from './helpers/duplicate'
+
 /**
  * Rendez-vous : anti-double-reservation et conservation en UTC.
  *
@@ -58,33 +60,17 @@ const book = (customer: string, startAt = SLOT_START, endAt = SLOT_END) =>
     context: { disableRevalidate: true },
   })
 
-const isDuplicate = (error: unknown): boolean => {
-  const message = String((error as Error)?.message ?? '').toLowerCase()
-  const code = (error as { code?: number })?.code
-  const name = String((error as Error)?.name ?? '')
-  return (
-    code === 11000 ||
-    name === 'ValidationError' ||
-    message.includes('duplicate') ||
-    message.includes('unique') ||
-    message.includes('pas valide')
-  )
-}
+const isDuplicate = isDuplicateKeyError
 
 describe('rendez-vous', () => {
   before(async () => {
     payload = await getPayload({ config })
 
-    // L'index partiel n'est pas exprimable dans la configuration Payload :
-    // on le pose ici comme le fait `npm run appointments:ensure-index`.
-    const db = (payload.db as unknown as { connection: { db: import('mongodb').Db } }).connection.db
-    await db.collection('appointments').createIndex(
-      { slotKey: 1 },
-      {
-        name: 'appointments_active_slot_unique',
-        unique: true,
-        partialFilterExpression: { slotKey: { $type: 'string' } },
-      },
+    // Les index partiels ne sont pas exprimables dans la configuration Payload :
+    // on les pose ici comme le fait `npm run db:ensure-indexes`.
+    const { ensurePartialUniqueIndexes } = await import('@/payload/scripts/ensureIndexes')
+    await ensurePartialUniqueIndexes(
+      (payload.db as unknown as { connection: { db: import('mongodb').Db } }).connection.db,
     )
 
     const mk = async (name: string, email: string, role: 'customer' | 'super-admin') =>

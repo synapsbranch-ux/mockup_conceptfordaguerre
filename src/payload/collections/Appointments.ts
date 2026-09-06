@@ -7,6 +7,7 @@ import {
 import type { AppointmentStatus } from '@/lib/commerce/transitions'
 
 import { isCMSUser } from '../access'
+import { resolveActor } from '../access/actor'
 import { ownerOrStaffRead, serverWriteOnly, staffWriteOnly } from '../access/ownership'
 
 /**
@@ -36,7 +37,7 @@ import { ownerOrStaffRead, serverWriteOnly, staffWriteOnly } from '../access/own
  * réservable tandis que deux réservations actives concurrentes s'excluent.
  *
  * La configuration Payload ne sait pas exprimer un filtre partiel : l'index est
- * posé par `npm run appointments:ensure-index`.
+ * posé par `npm run db:ensure-indexes`.
  */
 export const Appointments: CollectionConfig = {
   slug: 'appointments',
@@ -81,7 +82,7 @@ export const Appointments: CollectionConfig = {
       // considere l'absence de valeur comme une valeur, et deux rendez-vous
       // annules (slotKey nul) entreraient en collision. L'unicite est posee
       // par un index PARTIEL, restreint aux documents ou slotKey est une
-      // chaine — voir `npm run appointments:ensure-index`.
+      // chaine — voir `npm run db:ensure-indexes`.
       index: true,
       access: { create: serverWriteOnly, update: serverWriteOnly, read: staffWriteOnly },
       admin: {
@@ -281,7 +282,7 @@ export const Appointments: CollectionConfig = {
         // --- Garde de transition ----------------------------------------------
         const previous = originalDoc?.status as AppointmentStatus | undefined
         if (previous && next.status && previous !== next.status) {
-          const actor = isCMSUser(req.user) ? 'staff' : 'customer'
+          const actor = resolveActor(req)
           if (!canTransitionAppointment(previous, next.status as AppointmentStatus, actor)) {
             throw new Error(
               `Transition refusée : « ${previous} » ne peut pas devenir « ${next.status} ».`,
